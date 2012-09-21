@@ -1,0 +1,4 @@
+#!/bin/bash -v
+swig -c++ -java fact.i
+g++ -c stuff.cpp
+g++ -I /usr/lib/jvm/java-6-openjdk/include -c fact_wrap.cxx
