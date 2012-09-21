@@ -2,4 +2,4 @@
 swig -c++ -java fact.i
 g++ -c -fPIC stuff.cpp
 g++ -fPIC -I /usr/lib/jvm/java-6-openjdk/include -I /usr/lib/jvm/java-6-openjdk/include/linux -c fact_wrap.cxx
-ld -G *.o -o libfact.so
+ld -G *.o -o libtest.so
