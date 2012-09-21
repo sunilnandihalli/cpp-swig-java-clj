@@ -2,10 +2,10 @@
 
 public class runme {
   static {
-   System.loadLibrary("example");
+   System.loadLibrary("test");
   }
 
   public static void main(String argv[]) {
-    System.out.println(example.fact(4));
+    System.out.println(test.fact(4));
   }
 }

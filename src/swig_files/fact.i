@@ -3,3 +3,4 @@
 %{
 #include "stuff.h"
 %}
+int fact(int n);
