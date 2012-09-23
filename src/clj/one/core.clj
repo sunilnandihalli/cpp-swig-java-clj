@@ -5,10 +5,12 @@
 
 (def ^:dynamic *swig-includes*)
 (def ^:dynamic *java-includes*
-  (str "-I /usr/lib/jvm/java-6-openjdk/include "
-       "-I /usr/lib/jvm/java-6-openjdk/include/linux "))
+  (str " -I /usr/lib/jvm/java-6-openjdk/include "
+       " -I /usr/lib/jvm/java-6-openjdk/include/linux "))
 
-(def )
+(def ^:dynamic *c-flags* " -c -fPIC ")
+(def ^:dynamic *java-flags* "")
+(def ^:dynamic *shared-object-location* "generated_shared_native/")
 
 (defn stdout [p]
   (-> (.getInputStream p) io/reader))
@@ -22,4 +24,8 @@
 (defn compile-swig-file [swg-file generated-file-output-dir]
   (s/swig -c++ -java -outdir generated-file-output-dir swig-file))
 
-(defn compile-java-swig-wrapper-file [])
+(defn compile-c++-swig-wrapper-file [c++-wrapper-file]
+  (s/g++ *c-flags* c++-wrapper-file))
+
+(defn compile-java-proxy-class [java-proxy-class-file]
+  (s/javac *java-flags))
