@@ -1,8 +1,8 @@
 #!/bin/bash -v
-swig -c++ -java fact.i
-g++ -c -fPIC stuff.cpp
-g++ -fPIC -I /usr/lib/jvm/java-6-openjdk/include -I /usr/lib/jvm/java-6-openjdk/include/linux -c fact_wrap.cxx
-ld -G *.o -o libtest.so
+swig -c++ -java src/swig_files/fact.i
+g++ -c -fPIC src/cpp/stuff.cpp -o src/cpp/stuff.o
+g++ -fPIC -I /usr/lib/jvm/java-6-openjdk/include -I /usr/lib/jvm/java-6-openjdk/include/linux -c src/cpp/fact_wrap.cxx -o src/cpp/fact_wrap.o
+ld -G src/cpp/*.o -o libtest.so
 export LD_LIBRARY_PATH=/home/sunil/swig-java/one/:$LD_LIBRARY_PATH
 javac *.java
 java runme

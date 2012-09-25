@@ -1,0 +1,6 @@
+FIND_PACKAGE(SWIG REQUIRED)
+INCLUDE(${SWIG_USE_FILE})
+FIND_PACKAGE(JNI REQUIRED)
+SWIG_ADD_MODULE(wrapper java fact.i)
+include_directories(${JNI_INCLUDE_DIRS} cpp)
+SWIG_LINK_LIBRARIES(wrapper ${JNI_LIBRARIES} ${wrapper} cpp)

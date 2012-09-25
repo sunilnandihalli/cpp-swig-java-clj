@@ -29,12 +29,13 @@
 
 (defmacro echo [form]
   (let [syms (map #(let [form_term  (name %)]
-                     (if (= \$ (first form_term)) (symbol (.split (apply str (rest form_term)) " ")) form_term)) form)
-        print_stmts (map (fn [x] `(print ~x)) (interpose " " syms))]
+                     (if (= \$ (first form_term)) [:expand (symbol (apply str (rest form_term)))] [:as-is form_term])) form)
+        print_stmts (map (fn [x] `(print ~x)) (interpose " " (map second syms)))]
     `(let [p# ~form]
        (print \() ~@print_stmts (println \))
        (print (slurp (stdout p#)))
-       (print (slurp (stderr p#))))))
+       (print (slurp (stderr p#)))
+       p#)))
 
 (defn compile-swig-file [swg-file]
   (echo (s/swig -c++ -java -ignoremissing -outdir $*generated-java-file-output-dir* $swg-file)))
