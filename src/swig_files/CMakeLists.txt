@@ -11,6 +11,6 @@ SWIG_ADD_MODULE(wrapper java fact.i)
 SWIG_LINK_LIBRARIES(wrapper ${JNI_LIBRARIES} ${wrapper} cpp)
 install(TARGETS wrapper DESTINATION ${PROJECT_BINARY_DIR}/../../cpp_lib)
 
-file(GLOB_RECURSE GEN_JAVA_SRC "*.java")
+file(GLOB_RECURSE GEN_JAVA_SRC "${CMAKE_CURRENT_BINARY_DIR}/*.java")
 
 install(FILES ${GEN_JAVA_SRC} DESTINATION ${PROJECT_BINARY_DIR}/../../gen_java_src)
