@@ -1,5 +1,5 @@
 /* File: example.i */
-%module test
+%module misc_utils
 %{
 #include "stuff.h"
 #include <vector>

@@ -1,5 +1,12 @@
 (ns one.core
-  (:require [shake.core :as s]
-            [clojure.java.io :as io]))
+  (:require [clojure.pprint :as p])
+  (:import complex complexDouble complexInt vecInt
+           misc_utils))
 
 
+(System/loadLibrary "libwrapper.so")
+
+(let [x (doto (complex. 10.0 20.0)
+          (.setRe 10.0)
+          (.setIm 20.0))]
+  [(.getRe x) (.getIm x)])
