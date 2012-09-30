@@ -13,7 +13,7 @@
           (recur))))))
 
 
-(System/loadLibrary "wrapper")
+(System/loadLibrary "misc_utils")
 
 (let [x (doto (complex. 10.0 20.0)
           (.setRe 10.0)
