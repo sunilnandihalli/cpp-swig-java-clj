@@ -9,3 +9,8 @@ SET_SOURCE_FILES_PROPERTIES(fact.i PROPERTIES SWIG_FLAGS "-includeall")
 include_directories(${JNI_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/cpp)
 SWIG_ADD_MODULE(wrapper java fact.i)
 SWIG_LINK_LIBRARIES(wrapper ${JNI_LIBRARIES} ${wrapper} cpp)
+install(TARGETS wrapper DESTINATION ${PROJECT_BINARY_DIR}/../../cpp_lib)
+
+file(GLOB_RECURSE GEN_JAVA_SRC "*.java")
+
+install(FILES ${GEN_JAVA_SRC} DESTINATION ${PROJECT_BINARY_DIR}/../../gen_java_src)
