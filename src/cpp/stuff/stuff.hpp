@@ -1,5 +1,5 @@
-#ifndef STUFF_H
-#define STUFF_H
+#ifndef STUFF_HPP
+#define STUFF_HPP
 namespace misc_utils {
   int fact(int n);
   class complex {
