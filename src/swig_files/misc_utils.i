@@ -1,9 +1,9 @@
 %module misc_utils
 %{
-#include "stuff.h"
+#include "stuff/stuff.h"
 #include <vector>
 %}
-%include "stuff.h"
+%include "stuff/stuff.h"
 %include std_vector.i
 %template(complexInt) complexT<int>;
 %template(complexDouble) complexT<double>;
