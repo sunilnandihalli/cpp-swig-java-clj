@@ -3,7 +3,7 @@ git clean -xfd
 mkdir build;
 cd build;
 cmake ../src/;
-make install;
+make install VERBOSE=1;
 cd ..;
 lein2 javac
 lein2 swank
