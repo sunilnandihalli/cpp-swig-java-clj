@@ -1,4 +1,4 @@
-SUBDIRS("misc_utils")
-add_library(cpp STATIC misc_utils)
+SUBDIRS(misc_utils)
+add_library(cpp misc_utils)
 SET_TARGET_PROPERTIES(cpp PROPERTIES LINKER_LANGUAGE CXX)
 install(TARGETS cpp DESTINATION ${PROJECT_SOURCE_DIR}/../cpp_lib)
