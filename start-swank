@@ -2,7 +2,9 @@
 git clean -xfd
 mkdir build;
 cd build;
-cmake ../src/;
+
+cmake ../src
+#cmake --trace --debug-output ../src/;
 make install VERBOSE=1;
 cd ..;
 lein2 javac
