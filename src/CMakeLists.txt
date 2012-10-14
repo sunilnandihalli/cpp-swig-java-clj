@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 2.6)
+project(swig_java)
+set(CPP_SOURCES "")
+set(CPP_INCLUDE_DIRS "")
+set(JAVA_SOURCES "")
+set(SWIG_INTERFACE_FILES "")
+
+subdirs(swig_files cpp java)
+message("CPP_SOURCES : '${CPP_SOURCES}'")
+message("CPP_INCLUDE_DIRS : '${CPP_INCLUDE_DIRS}'")
+message("JAVA_SOURCES : '${JAVA_SOURCES}'")
+message("SWIG_INTERFACE_FILES : '${SWIG_INTERFACE_FILES}'")
