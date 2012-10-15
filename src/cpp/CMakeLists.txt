@@ -1,0 +1,3 @@
+add_subdirectory(misc_utils)
+set(CPP_SOURCES ${CPP_SOURCES} PARENT_SCOPE)
+set(CPP_INCLUDE_DIRS ${CPP_INCLUDE_DIRS} PARENT_SCOPE)
