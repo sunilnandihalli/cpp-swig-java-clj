@@ -5,8 +5,17 @@ set(CPP_INCLUDE_DIRS "")
 set(JAVA_SOURCES "")
 set(SWIG_INTERFACE_FILES "")
 
-subdirs(swig_files cpp java)
+add_subdirectory(swig_files)
+add_subdirectory(cpp)
+add_subdirectory(java)
 message("CPP_SOURCES : '${CPP_SOURCES}'")
 message("CPP_INCLUDE_DIRS : '${CPP_INCLUDE_DIRS}'")
 message("JAVA_SOURCES : '${JAVA_SOURCES}'")
 message("SWIG_INTERFACE_FILES : '${SWIG_INTERFACE_FILES}'")
+add_library(cpp_lib ${CPP_SOURCES})
+
+find_package(Java COMPONENTS "Development" REQUIRED)
+find_package(JNI REQUIRED)
+include("UseJava")
+
+add_jar(java_jar ${JAVA_SOURCES})
