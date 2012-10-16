@@ -2,7 +2,7 @@
 
 public class runme {
   static {
-   System.loadLibrary("misc_utils_java");
+   System.loadLibrary("java_interop");
   }
 
   public static void main(String argv[]) {
