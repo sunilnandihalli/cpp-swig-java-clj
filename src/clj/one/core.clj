@@ -19,5 +19,6 @@
 
 (let [x (doto (complex. 10.0 20.0)
           (.setRe 100.0)
-          (.setIm 200.0))]
-  [(.getRe x) (.getIm x)])
+          (.setIm 200.0))
+      y (complex. 212.0 321.0)]
+  [(.getRe x) (.getIm x) (.getRe y) (.getIm y)])

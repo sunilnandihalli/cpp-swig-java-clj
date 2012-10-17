@@ -1,0 +1,8 @@
+set_source_files_properties(misc_utils.i PROPERTIES CPLUSPLUS ON)                                                                           
+include_directories(${JNI_INCLUDE_DIRS}) 
+swig_add_module(callback_java java callback.i) 
+swig_link_libraries(callback_java ${JNI_LIBRARIES} ${swig_files})           
+
+set(CPP_SOURCES ${CPP_SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/example.cxx PARENT_SCOPE)
+set(SWIG_INTERFACE_FILES ${SWIG_INTERFACE_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/example.i PARENT_SCOPE)
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/example.i PROPERTIES SWIG_OUTDIR ${CMAKE_SWIG_OUTDIR}/callback)
