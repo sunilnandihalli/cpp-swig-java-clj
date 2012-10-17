@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 2.6)
 project(swig_java)
+find_package(SWIG REQUIRED)
+include(${SWIG_USE_FILE}) 
+find_package(JNI REQUIRED) 
+include_directories(${CPP_INCLUDE_DIRS} ${JNI_INCLUDE_DIRS})
+set(CMAKE_CXX_FLAGS "-fPIC")
+
 set(CPP_SOURCES "")
 set(CPP_INCLUDE_DIRS "")
 set(JAVA_SOURCES "")
@@ -14,11 +20,7 @@ message("CPP_INCLUDE_DIRS : '${CPP_INCLUDE_DIRS}'")
 message("JAVA_SOURCES : '${JAVA_SOURCES}'")
 message("SWIG_INTERFACE_FILES : '${SWIG_INTERFACE_FILES}'")
 
-find_package(SWIG REQUIRED)
-include(${SWIG_USE_FILE}) 
-find_package(JNI REQUIRED) 
-include_directories(${CPP_INCLUDE_DIRS} ${JNI_INCLUDE_DIRS})
-set(CMAKE_CXX_FLAGS "-fPIC")
+
 add_library(cpp_lib ${CPP_SOURCES})
 
 set(CMAKE_SWIG_FLAGS "")                                                                                                                 
