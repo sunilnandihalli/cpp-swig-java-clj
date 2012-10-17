@@ -1,5 +1,7 @@
-set_source_files_properties(example.i PROPERTIES CPLUSPLUS ON)                                                                           
 include_directories(${JNI_INCLUDE_DIRS}) 
+set_source_files_properties(example.i PROPERTIES CPLUSPLUS ON)                                                                           
+set_source_files_properties(example.i PROPERTIES SWIG_FLAGS "-package callback")
+set_source_files_properties(example.i PROPERTIES SWIG_OUTDIR ${CMAKE_SWIG_OUTDIR}/callback)
 swig_add_module(callback_java java example.i) 
 swig_link_libraries(callback_java ${JNI_LIBRARIES} ${swig_files})           
-
+install(TARGETS callback_java DESTINATION ${CMAKE_SOURCE_DIR}/../cpp_lib)

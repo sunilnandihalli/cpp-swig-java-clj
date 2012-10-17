@@ -20,15 +20,11 @@ message("CPP_INCLUDE_DIRS : '${CPP_INCLUDE_DIRS}'")
 message("JAVA_SOURCES : '${JAVA_SOURCES}'")
 message("SWIG_INTERFACE_FILES : '${SWIG_INTERFACE_FILES}'")
 
-
 add_library(cpp_lib ${CPP_SOURCES})
 
 set(CMAKE_SWIG_FLAGS "")                                                                                                                 
 set(CMAKE_SWIG_OUTDIR "${PROJECT_SOURCE_DIR}/../gen_java_src")                                                                               
-set_source_files_properties(example.i PROPERTIES CPLUSPLUS ON)
-set_source_files_properties(example.i PROPERTIES SWIG_FLAGS "-package callback")
-set_source_files_properties(example.i PROPERTIES SWIG_OUTDIR ${CMAKE_SWIG_OUTDIR}/callback)
-swig_add_module(java_interop java example.i) 
+swig_add_module(java_interop java ${SWIG_INTERFACE_FILES})
 swig_link_libraries(java_interop ${JNI_LIBRARIES} cpp_lib)
 install(TARGETS java_interop DESTINATION ${CMAKE_SOURCE_DIR}/../cpp_lib)
 
