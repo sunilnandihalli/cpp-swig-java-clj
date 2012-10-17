@@ -26,6 +26,7 @@ add_library(cpp_lib ${CPP_SOURCES})
 
 
 set_source_files_properties(${SWIG_INTERFACE_FILES} PROPERTIES CPLUSPLUS ON)
+set_source_files_properties(${SWIG_INTERFACE_FILES} PROPERTIES SWIG_OUTDIR ${JAVA_GEN_SOURCE_DIR})
 swig_add_module(java_interop java ${SWIG_INTERFACE_FILES})
 swig_link_libraries(java_interop ${JNI_LIBRARIES} cpp_lib)
 install(TARGETS java_interop DESTINATION ${CMAKE_SOURCE_DIR}/../cpp_lib)
