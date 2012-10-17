@@ -9,7 +9,9 @@ set(CPP_SOURCES "")
 set(CPP_INCLUDE_DIRS "")
 set(JAVA_SOURCES "")
 set(SWIG_INTERFACE_FILES "")
-
+set(CMAKE_SWIG_FLAGS "")                                                                                                                 
+set(JAVA_GEN_SOURCE_DIR "${PROJECT_SOURCE_DIR}/../gen_java_src/")
+ 
 add_subdirectory(swig_files)
 add_subdirectory(cpp)
 add_subdirectory(java)
@@ -22,8 +24,7 @@ message("SWIG_INTERFACE_FILES : '${SWIG_INTERFACE_FILES}'")
 include_directories(${CPP_INCLUDE_DIRS} ${JNI_INCLUDE_DIRS})
 add_library(cpp_lib ${CPP_SOURCES})
 
-set(CMAKE_SWIG_FLAGS "")                                                                                                                 
-set(CMAKE_SWIG_OUTDIR "${PROJECT_SOURCE_DIR}/../gen_java_src")                                                                               
+
 set_source_files_properties(${SWIG_INTERFACE_FILES} PROPERTIES CPLUSPLUS ON)
 swig_add_module(java_interop java ${SWIG_INTERFACE_FILES})
 swig_link_libraries(java_interop ${JNI_LIBRARIES} cpp_lib)
