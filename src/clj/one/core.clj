@@ -3,6 +3,19 @@
   (:import  complex complexDouble complexInt vecInt
             misc_utilsJNI runme))
 
+(defn scaffold [iface]
+  "this code is from Christophe Grand .. but very usefull.. so I chose to include.."
+  (doseq [[iface methods] (->> iface .getMethods
+                               (map #(vector (.getName (.getDeclaringClass %))
+                                             (symbol (.getName %))
+                                             (count (.getParameterTypes %))))
+                               (group-by first))]
+    (println (str "  " iface))
+    (doseq [[_ name argcount] methods]
+      (println
+       (str "    "
+            (list name (into ['this] (take argcount (repeatedly gensym)))))))))
+
 (comment
   (let [p (System/getProperties)
         keys (.keys p)]

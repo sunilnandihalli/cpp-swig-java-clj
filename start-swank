@@ -3,8 +3,8 @@ git clean -xfd
 mkdir build;
 cd build;
 cmake ../src/;
-make install VERBOSE=1;
+make install #VERBOSE=1;
 cd ..;
 lein2 javac
-eu-readelf -a cpp_lib/libmisc_utils_java.so | egrep fact
+#eu-readelf -a cpp_lib/libmisc_utils_java.so | egrep fact
 lein2 swank
