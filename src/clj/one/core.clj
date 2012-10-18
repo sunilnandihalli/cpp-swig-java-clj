@@ -35,9 +35,33 @@
          (System/loadLibrary "misc_utils"))
 
 (misc_utils/fact 10)
+(def args (make-array String 0))
+(runme/main args)
+(defmacro check[x gen]
+  `(let [[a# b# c# d# e# f#] (repeatedly 6 ~gen)
+         x# (doto (~x a# b#)
+             (.setRe c#)
+             (.setIm d#))
+         y# (~x e# f#)]
+     [(.getRe x#) (.getIm x#) (.getRe y#) (.getIm y#)]))
 
-(let [x (doto (complex. 10.0 20.0)
-          (.setRe 100.0)
-          (.setIm 200.0))
-      y (complex. 212.0 321.0)]
-  [(.getRe x) (.getIm x) (.getRe y) (.getIm y)])
+(defn check-fn[cplx-type-ctor gen]
+  (let [[a b c d e f :as inp] (repeatedly 6 gen)
+         x (doto (cplx-type-ctor a b)
+             (.setRe c)
+             (.setIm d))
+         y (cplx-type-ctor e f)]
+    [inp [(.getRe x) (.getIm x) (.getRe y) (.getIm y)]]))
+
+(defmacro check [cplx-type gen]
+  `(check-fn #(new ~cplx-type %1 %2) ~gen))
+
+(check complex rand)
+(check complexInt #(rand-int 100))
+(check complexDouble rand)
+
+(comment (callback.runme/main args)
+         (jenum.runme/main args)
+         (jclass.runme/main args)
+         (reference.runme/main args)
+         (extend.runme/main args))
