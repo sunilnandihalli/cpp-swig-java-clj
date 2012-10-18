@@ -4,7 +4,7 @@ find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE}) 
 find_package(JNI REQUIRED) 
 
-set(CMAKE_CXX_FLAGS "-fPIC")
+set(CMAKE_CXX_FLAGS "-fPIC -ggdb3")
 set(CPP_SOURCES "")
 set(CPP_INCLUDE_DIRS "")
 set(JAVA_SOURCES "")

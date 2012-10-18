@@ -1,7 +1,13 @@
 (ns one.core
   (:require [clojure.pprint :as p])
   (:import  complex complexDouble complexInt vecInt
-            misc_utilsJNI runme))
+            misc_utilsJNI runme
+            ;callback.runme
+            ;jenum.runme
+            ;jclass.runme
+            ;reference.runme
+            ;extend.runme
+            ))
 
 (defn scaffold [iface]
   "this code is from Christophe Grand .. but very usefull.. so I chose to include.."
