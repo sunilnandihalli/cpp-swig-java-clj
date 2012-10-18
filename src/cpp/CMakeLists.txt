@@ -14,8 +14,8 @@ MACRO(ADD_SWIG_JAVA_WRAPPER PKG_NAME)
 ENDMACRO(ADD_SWIG_JAVA_WRAPPER)
 
 add_subdirectory(callback)
-add_subdirectory(enum)
-add_subdirectory(class)
+add_subdirectory(jenum)
+add_subdirectory(jclass)
 add_subdirectory(reference)
 add_subdirectory(extend)
 

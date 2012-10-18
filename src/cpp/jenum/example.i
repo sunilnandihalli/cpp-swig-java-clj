@@ -1,5 +1,5 @@
 /* File : example.i */
-%module enum_module
+%module jenum_module
 
 %{
 #include "example.h"
