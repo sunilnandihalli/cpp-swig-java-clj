@@ -1,6 +1,6 @@
 #!/bin/bash -v 
-git clean -xfd
-mkdir build;
+#git clean -xfd
+#mkdir build;
 cd build;
 cmake ../src/;
 make install #VERBOSE=1;
