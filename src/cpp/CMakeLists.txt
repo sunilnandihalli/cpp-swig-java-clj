@@ -14,6 +14,11 @@ MACRO(ADD_SWIG_JAVA_WRAPPER PKG_NAME)
 ENDMACRO(ADD_SWIG_JAVA_WRAPPER)
 
 add_subdirectory(callback)
+add_subdirectory(enum)
+add_subdirectory(class)
+add_subdirectory(reference)
+add_subdirectory(extend)
+
 set(CPP_SOURCES ${CPP_SOURCES} PARENT_SCOPE)
 set(CPP_INCLUDE_DIRS ${CPP_INCLUDE_DIRS} PARENT_SCOPE)
 set(SWIG_INTERFACE_FILES ${SWIG_INTERFACE_FILES} PARENT_SCOPE)
