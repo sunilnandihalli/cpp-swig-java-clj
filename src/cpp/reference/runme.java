@@ -28,7 +28,7 @@ public class runme {
     // It returns a new allocated object.
     
     System.out.println( "Adding a+b" );
-    Vector c = example.addv(a,b);
+    Vector c = reference_module.addv(a,b);
     System.out.println( "    a+b = " + c.print() );
     
     // Note: Unless we free the result, a memory leak will occur if the -noproxy commandline
@@ -55,7 +55,7 @@ public class runme {
     
     // This works, but it would cause a memory leak if -noproxy was used!
     
-    va.set(2,example.addv(a,b));
+    va.set(2,reference_module.addv(a,b));
     
 
     // Get some values from the array

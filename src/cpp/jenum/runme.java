@@ -24,9 +24,9 @@ public class runme {
 
     System.out.println("\nTesting use of enums with functions\n");
 
-    example.enum_test(color.RED, Foo.speed.IMPULSE);
-    example.enum_test(color.BLUE, Foo.speed.WARP);
-    example.enum_test(color.GREEN, Foo.speed.LUDICROUS);
+    jenum_module.enum_test(color.RED, Foo.speed.IMPULSE);
+    jenum_module.enum_test(color.BLUE, Foo.speed.WARP);
+    jenum_module.enum_test(color.GREEN, Foo.speed.LUDICROUS);
 
     System.out.println( "\nTesting use of enum with class method" );
     Foo f = new Foo();
