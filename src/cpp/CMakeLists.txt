@@ -1,4 +1,18 @@
 add_subdirectory(misc_utils)
+
+MACRO(ADD_SWIG_JAVA_WRAPPER PKG_NAME)
+  include_directories(. ${JNI_INCLUDE_DIRS}) 
+  set(CMAKE_SWIG_FLAGS -package ${PKG_NAME})
+  set(CMAKE_SWIG_OUTDIR "${CMAKE_SWIG_OUTDIR}/${PKG_NAME}")
+  file(MAKE_DIRECTORY ${CMAKE_SWIG_OUTDIR})
+  set_source_files_properties(example.i PROPERTIES CPLUSPLUS ON)
+  swig_add_module("${PKG_NAME}_java" java example.i) 
+  swig_link_libraries("${PKG_NAME}_java" ${JNI_LIBRARIES} ${${PKG_NAME}_java})           
+  install(TARGETS callback_java DESTINATION ${CMAKE_SOURCE_DIR}/../cpp_lib)
+  add_custom_target(${PKG_NAME}_runme ALL
+    echo "package ${PKG_NAME}\;" | cat - ${CMAKE_CURRENT_SOURCE_DIR}/runme.java > ${CMAKE_SWIG_OUTDIR}/runme.java)
+ENDMACRO(ADD_SWIG_JAVA_WRAPPER)
+
 add_subdirectory(callback)
 set(CPP_SOURCES ${CPP_SOURCES} PARENT_SCOPE)
 set(CPP_INCLUDE_DIRS ${CPP_INCLUDE_DIRS} PARENT_SCOPE)

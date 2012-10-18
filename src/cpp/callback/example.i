@@ -1,5 +1,5 @@
 /* File : example.i */
-%module(directors="1") callback
+%module(directors="1") callback_module
 %{
 #include "example.h"
 %}
