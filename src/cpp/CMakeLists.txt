@@ -8,7 +8,7 @@ MACRO(ADD_SWIG_JAVA_WRAPPER PKG_NAME)
   set_source_files_properties(example.i PROPERTIES CPLUSPLUS ON)
   swig_add_module("${PKG_NAME}_java" java example.i) 
   swig_link_libraries("${PKG_NAME}_java" ${JNI_LIBRARIES} ${${PKG_NAME}_java})           
-  install(TARGETS callback_java DESTINATION ${CMAKE_SOURCE_DIR}/../cpp_lib)
+  install(TARGETS ${PKG_NAME}_java DESTINATION ${CMAKE_SOURCE_DIR}/../cpp_lib)
   add_custom_target(${PKG_NAME}_runme ALL
     echo "package ${PKG_NAME}\;" | cat - ${CMAKE_CURRENT_SOURCE_DIR}/runme.java > ${CMAKE_SWIG_OUTDIR}/runme.java)
 ENDMACRO(ADD_SWIG_JAVA_WRAPPER)
