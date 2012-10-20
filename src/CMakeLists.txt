@@ -5,6 +5,8 @@ include(${SWIG_USE_FILE})
 find_package(JNI REQUIRED) 
 
 set(CMAKE_CXX_FLAGS "-fPIC -ggdb3")
+set(CMAKE_C_FLAGS "-fPIC -ggdb3")
+
 set(CPP_SOURCES "")
 set(CPP_INCLUDE_DIRS "")
 set(JAVA_SOURCES "")
@@ -12,6 +14,7 @@ set(SWIG_INTERFACE_FILES "")
 set(CMAKE_SWIG_FLAGS "")                                                                                                                 
 set(CMAKE_SWIG_OUTDIR "${PROJECT_SOURCE_DIR}/../gen_java_src/")
 file(MAKE_DIRECTORY ${CMAKE_SWIG_OUTDIR}) 
+
 add_subdirectory(swig_files)
 add_subdirectory(cpp)
 add_subdirectory(java)

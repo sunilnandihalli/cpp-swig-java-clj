@@ -22,6 +22,7 @@ add_subdirectory(extend)
 add_subdirectory(jtemplate)
 add_subdirectory(constants)
 add_subdirectory(funcptr)
+add_subdirectory(multimap)
 
 set(CPP_SOURCES ${CPP_SOURCES} PARENT_SCOPE)
 set(CPP_INCLUDE_DIRS ${CPP_INCLUDE_DIRS} PARENT_SCOPE)
