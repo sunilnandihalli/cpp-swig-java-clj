@@ -15,6 +15,8 @@ set(CMAKE_SWIG_FLAGS "")
 set(CMAKE_SWIG_OUTDIR "${PROJECT_SOURCE_DIR}/../gen_java_src/")
 file(MAKE_DIRECTORY ${CMAKE_SWIG_OUTDIR}) 
 
+message("JNI_INCLUDE_DIRS : ${JNI_INCLUDE_DIRS}")
+
 add_subdirectory(swig_files)
 add_subdirectory(cpp)
 add_subdirectory(java)
