@@ -79,3 +79,5 @@
 (jclass.runme/main args)
 (jtemplate.runme/main args)
 (constants.runme/main args)
+(comment
+ (funcptr.runme/main args))
