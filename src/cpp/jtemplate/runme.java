@@ -13,8 +13,8 @@ public class runme {
   public static void main(String argv[]) 
   {
     // Call some templated functions
-    System.out.println(jtemplate.maxint(3,7));
-    System.out.println(jtemplate.maxdouble(3.14,2.18));
+    System.out.println(jtemplate_module.maxint(3,7));
+    System.out.println(jtemplate_module.maxdouble(3.14,2.18));
     
     // Create some class
     

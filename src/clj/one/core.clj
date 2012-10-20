@@ -77,3 +77,4 @@
 (reference.runme/main args)
 (jenum.runme/main args)         
 (jclass.runme/main args)
+(jtemplate.runme/main args)
