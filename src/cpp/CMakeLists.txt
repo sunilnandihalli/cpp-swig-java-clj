@@ -21,6 +21,8 @@ add_subdirectory(reference)
 add_subdirectory(extend)
 add_subdirectory(jtemplate)
 add_subdirectory(constants)
+add_subdirectory(funcptr)
+
 set(CPP_SOURCES ${CPP_SOURCES} PARENT_SCOPE)
 set(CPP_INCLUDE_DIRS ${CPP_INCLUDE_DIRS} PARENT_SCOPE)
 set(SWIG_INTERFACE_FILES ${SWIG_INTERFACE_FILES} PARENT_SCOPE)
