@@ -70,7 +70,7 @@
                           (for [i (range (.size v))]
                             (.get v i))) v)]
   (interposing-doto [v print-n-continue]
-                     (.add 10) (.add 20) (.add 30) (.add 40) (.clear) (.reserve 100)))
+                    (.add 10) (.add 20) (.add 30) (.add 40) (.clear) (.reserve 100)))
 
 (callback.runme/main args)
 (extend.runme/main args)
