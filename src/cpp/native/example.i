@@ -1,5 +1,5 @@
 /* File : example.i */
-%module example
+%module native_module
 
 %{
 #include <string.h>
