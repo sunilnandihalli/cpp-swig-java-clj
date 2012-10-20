@@ -78,3 +78,4 @@
 (jenum.runme/main args)         
 (jclass.runme/main args)
 (jtemplate.runme/main args)
+(constants.runme/main args)
