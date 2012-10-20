@@ -74,8 +74,6 @@
 
 (callback.runme/main args)
 (extend.runme/main args)
-
-(comment
-  (reference.runme/main args)
-  (jenum.runme/main args)         
-  (jclass.runme/main args))
+(reference.runme/main args)
+(jenum.runme/main args)         
+(jclass.runme/main args)
