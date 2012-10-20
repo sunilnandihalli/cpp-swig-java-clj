@@ -26,6 +26,8 @@ add_subdirectory(constants)
 add_subdirectory(funcptr)
 add_subdirectory(pointer)
 add_subdirectory(simple)
+add_subdirectory(typemap)
+
 set(CPP_SOURCES ${CPP_SOURCES} PARENT_SCOPE)
 set(CPP_INCLUDE_DIRS ${CPP_INCLUDE_DIRS} PARENT_SCOPE)
 set(SWIG_INTERFACE_FILES ${SWIG_INTERFACE_FILES} PARENT_SCOPE)
