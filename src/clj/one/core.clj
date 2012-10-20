@@ -37,20 +37,23 @@
 (misc_utils/fact 10)
 (def args (make-array String 0))
 (runme/main args)
-(defn check-fn[cplx-type-ctor gen]
-  (let [[a b c d e f :as inp] (repeatedly 6 gen)
+(defn check-fn[cplx-type-ctor gen adder]
+  (let [get-val #(vector (.getRe %) (.getIm %))
+        [a b c d e f :as inp] (repeatedly 6 gen)
          x (doto (cplx-type-ctor a b)
              (.setRe c)
              (.setIm d))
-         y (cplx-type-ctor e f)]
-    [inp [(.getRe x) (.getIm x) (.getRe y) (.getIm y)]]))
+        y (cplx-type-ctor e f)
+        z (adder x y)]
+    [inp (map get-val [x y z])]))
 
-(defmacro check [cplx-type gen]
-  `(check-fn #(new ~cplx-type %1 %2) ~gen))
+(defmacro check [cplx-type gen add_op]
+  `(check-fn #(new ~cplx-type %1 %2) ~gen #(~(symbol (str "." (name add_op))) %1 %2)))
 
-(check complex rand)
-(check complexInt #(rand-int 100))
-(check complexDouble rand)
+(check complexInt #(rand-int 100) add_op2)
+(check complexDouble rand add_op2)
+(check complex rand add_op1)
+
 
 (callback.runme/main args)
 (extend.runme/main args)

@@ -6,6 +6,9 @@ namespace misc_utils {
   public:
     double re,im;
     complex(double _re,double _im);
+#ifdef SWIG
+    %rename(add_op1) operator+(const complex& a);
+#endif
     complex operator+(const complex& b);
     complex add(const complex& a);
   };
@@ -15,6 +18,9 @@ namespace misc_utils {
     T re,im;
     complexT(T _re,T _im):re(_re),im(_im) {
     }
+#ifdef SWIG 
+    %rename(add_op2) operator+(const complexT<T>& a);
+#endif
     complexT<T> operator+(const complexT<T>& a) {
       return complexT<T>(re+a.re,im+a.im);
     }
