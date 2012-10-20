@@ -56,11 +56,26 @@
 (check complexInt #(rand-int 100) add_op)
 (check complexDouble rand add_op)
 (check complex rand add_op)
+(scaffold vecInt)
 
+(defmacro interposing-doto [[java-obj interpose-form] & forms]
+  (let [interposed-forms (interleave (map (fn [java-interop-form]
+                                            `(#(doto % ~java-interop-form))) forms)
+                                     (repeat interpose-form))]
+    `(-> ~java-obj ~@interposed-forms)))
+
+(let [v (vecInt.)
+      print-n-continue (fn [v]
+                         (clojure.pprint/pprint
+                          (for [i (range (.size v))]
+                            (.get v i))) v)]
+  (interposing-doto [v print-n-continue]
+                     (.add 10) (.add 20) (.add 30) (.add 40) (.clear) (.reserve 100)))
 
 (callback.runme/main args)
 (extend.runme/main args)
-(comment 
+
+(comment
+  (reference.runme/main args)
   (jenum.runme/main args)         
-  (jclass.runme/main args)
-  (reference.runme/main args))
+  (jclass.runme/main args))
