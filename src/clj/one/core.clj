@@ -53,9 +53,9 @@
 (defmacro check [cplx-type gen add_op]
     `(check-fn #(new ~cplx-type %1 %2) ~gen #(. %1 ~add_op %2)))
 
-(check complexInt #(rand-int 100) add_op2)
-(check complexDouble rand add_op2)
-(check complex rand add_op1)
+(check complexInt #(rand-int 100) add_op)
+(check complexDouble rand add_op)
+(check complex rand add_op)
 
 
 (callback.runme/main args)
