@@ -72,12 +72,12 @@
 (jtemplate.runme/main args)
 (constants.runme/main args)
 (simple.runme/main args)
-(comment
-  (variables.runme/main args)
-  (pointer.runme/main args)
-  (funcptr.runme/main args))
 
-(comment
-  (typemap.runme/main args)
-  (multimap.runme/main args)
-  (native.runme/main args))
+(variables.runme/main args)
+(pointer.runme/main args)
+(funcptr.runme/main args)
+
+
+(typemap.runme/main args)
+(multimap.runme/main args)
+(native.runme/main args)
