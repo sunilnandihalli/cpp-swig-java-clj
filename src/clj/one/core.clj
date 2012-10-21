@@ -62,34 +62,32 @@
   (interposing-doto [v print-n-continue]
                     (.add 10) (.add 20) (.add 30) (.add 40) (.clear) (.reserve 100)))
 
-(callback.runme/main args)
-(extend.runme/main args)
-(reference.runme/main args)
-(jenum.runme/main args)         
-(jclass.runme/main args)
-(jtemplate.runme/main args)
-(simple.runme/main args)
-(constants.runme/main args)
 
+(defmacro bounded [& forms]
+  (let [new-forms (map (fn [frm]
+                         `(do
+                            (println (str "starting .... " ~(str frm)))
+                            ~frm
+                            (println (str "finished ....." ~(str frm))))) forms)]
+    `(do ~@new-forms)))
 
-(variables.runme/main args)
-(pointer.runme/main args)
-(funcptr.runme/main args)
-
-
-(typemap.runme/main args)
-(multimap.runme/main args)
-(native.runme/main args)
+(bounded
+ (callback.runme/main args)
+ (extend.runme/main args)
+ (reference.runme/main args)
+ (jenum.runme/main args)         
+ (jclass.runme/main args)
+ (jtemplate.runme/main args)
+ (simple.runme/main args)
+ (constants.runme/main args)
+ #_(variables.runme/main args)
+ (pointer.runme/main args)
+ (funcptr.runme/main args)
+ (typemap.runme/main args)
+ (multimap.runme/main args)
+ #_(jnative.runme/main args))
 
 (comment
-
   (defmacro check [cplx-type gen add_op]
-    `(check-fn #(new ~cplx-type %1 %2) ~gen #(~(symbol (str "." (name add_op))) %1 %2)))
-  
-
-
-
-  
-
-)
+    `(check-fn #(new ~cplx-type %1 %2) ~gen #(~(symbol (str "." (name add_op))) %1 %2))))
 
