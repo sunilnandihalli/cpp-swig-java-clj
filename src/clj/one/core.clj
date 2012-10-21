@@ -1,13 +1,5 @@
 (ns one.core
-  (:require [clojure.pprint :as p])
-  (:import  complex complexDouble complexInt vecInt
-            misc_utilsJNI runme
-            ;callback.runme
-            ;jenum.runme
-            ;jclass.runme
-            ;reference.runme
-            ;extend.runme
-            ))
+  (:require [clojure.pprint :as p]))
 
 (defn scaffold [iface]
   "this code is from Christophe Grand .. but very usefull.. so I chose to include.."
@@ -79,10 +71,9 @@
 (jclass.runme/main args)
 (jtemplate.runme/main args)
 (constants.runme/main args)
-
+(simple.runme/main args)
 (comment
   (variables.runme/main args)
-  (simple.runme/main args)
   (pointer.runme/main args)
   (funcptr.runme/main args))
 

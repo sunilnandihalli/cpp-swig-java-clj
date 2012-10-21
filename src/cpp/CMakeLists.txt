@@ -24,9 +24,9 @@ add_subdirectory(funcptr)
 add_subdirectory(pointer)
 add_subdirectory(simple)
 add_subdirectory(variables)
-#add_subdirectory(typemap)
-#add_subdirectory(multimap)
-#add_subdirectory(native)
+add_subdirectory(typemap)
+add_subdirectory(multimap)
+add_subdirectory(native)
 
 
 set(CPP_SOURCES ${CPP_SOURCES} PARENT_SCOPE)
