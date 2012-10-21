@@ -1,6 +1,6 @@
 #!/bin/bash -v 
 #git clean -xfd
-rm -rvf gen_java_src cpp_lib
+#rm -rvf gen_java_src cpp_lib
 mkdir -p build;
 cd build;
 cmake ../src/;
