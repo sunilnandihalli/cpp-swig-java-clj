@@ -31,19 +31,6 @@ char *point_toString1(Point *p) {
   return point_toString("(%d,%d)", p);
 }
 
-/* this one we wrapped manually*/
-JNIEXPORT jstring JNICALL Java_exampleJNI_point_1toString2(JNIEnv *jenv, jclass jcls, jlong jpoint) {
-    Point * p;
-    jstring result;
-
-    (void)jcls;
-
-    p = *(Point **)&jpoint;
-
-    result = (*jenv)->NewStringUTF(jenv, point_toString("[%d,%d]", p));
-
-    return result;
-}
 %}
 
 
