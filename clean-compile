@@ -1,0 +1,8 @@
+#!/bin/bash -v 
+git clean -xfd
+mkdir -p build;
+cd build;
+cmake ../src/;
+make install #VERBOSE=1;
+cd ..;
+lein2 javac

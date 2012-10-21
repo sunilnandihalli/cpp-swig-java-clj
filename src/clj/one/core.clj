@@ -34,24 +34,20 @@
 (defn check-fn[cplx-type-ctor gen adder]
   (let [get-val #(vector (.getRe %) (.getIm %))
         [a b c d e f :as inp] (repeatedly 6 gen)
-         x (doto (cplx-type-ctor a b)
-             (.setRe c)
-             (.setIm d))
+        x (doto (cplx-type-ctor a b)
+            (.setRe c)
+            (.setIm d))
         y (cplx-type-ctor e f)
         z (adder x y)]
     [inp (map get-val [x y z])]))
 
-#_(defmacro check [cplx-type gen add_op]
-    `(check-fn #(new ~cplx-type %1 %2) ~gen #(~(symbol (str "." (name add_op))) %1 %2)))
-
 (defmacro check [cplx-type gen add_op]
-    `(check-fn #(new ~cplx-type %1 %2) ~gen #(. %1 ~add_op %2)))
+  `(check-fn #(new ~cplx-type %1 %2) ~gen #(. %1 ~add_op %2)))
 
 (check complexInt #(rand-int 100) add_op)
 (check complexDouble rand add_op)
 (check complex rand add_op)
 (scaffold vecInt)
-
 (defmacro interposing-doto [[java-obj interpose-form] & forms]
   (let [interposed-forms (interleave (map (fn [java-interop-form]
                                             `(#(doto % ~java-interop-form))) forms)
@@ -72,8 +68,9 @@
 (jenum.runme/main args)         
 (jclass.runme/main args)
 (jtemplate.runme/main args)
-(constants.runme/main args)
 (simple.runme/main args)
+(constants.runme/main args)
+
 
 (variables.runme/main args)
 (pointer.runme/main args)
@@ -83,3 +80,16 @@
 (typemap.runme/main args)
 (multimap.runme/main args)
 (native.runme/main args)
+
+(comment
+
+  (defmacro check [cplx-type gen add_op]
+    `(check-fn #(new ~cplx-type %1 %2) ~gen #(~(symbol (str "." (name add_op))) %1 %2)))
+  
+
+
+
+  
+
+)
+

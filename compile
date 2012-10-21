@@ -1,0 +1,9 @@
+#!/bin/bash -v 
+#git clean -xfd
+#rm -rvf gen_java_src cpp_lib
+mkdir -p build;
+cd build;
+cmake ../src/;
+make install #VERBOSE=1;
+cd ..;
+lein2 javac
