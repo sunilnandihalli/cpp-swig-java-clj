@@ -60,35 +60,50 @@
                             (println (str "finished ....." ~(str frm))))) forms)]
     `(do ~@new-forms)))
 
-(bounded
- (misc_utils/fact 10)
- (runme/main args)
- (check complexInt #(rand-int 100) add_op)
- (check complexDouble rand add_op)
- (check complex rand add_op)
- (scaffold vecInt)
- (let [v (vecInt.)
-       print-n-continue (fn [v]
-                          (clojure.pprint/pprint
-                           (for [i (range (.size v))]
-                             (.get v i))) v)]
-   (interposing-doto [v print-n-continue]
-                     (.add 10) (.add 20) (.add 30) (.add 40) (.clear) (.reserve 100)))
- (callback.runme/main args)
- (extend.runme/main args)
- (reference.runme/main args)
- (jenum.runme/main args)         
- (jclass.runme/main args)
- (jtemplate.runme/main args)
- (simple.runme/main args)
- (constants.runme/main args)
- (variables.runme/main args)
- (pointer.runme/main args)
- (funcptr.runme/main args)
- (typemap.runme/main args)
- (multimap.runme/main args)
- (jnative.runme/main args))
+#_(bounded
+   (misc_utils/fact 10)
+   (runme/main args)
+   (check complexInt #(rand-int 100) add_op)
+   (check complexDouble rand add_op)
+   (check complex rand add_op)
+   (scaffold vecInt)
+   (let [v (vecInt.)
+         print-n-continue (fn [v]
+                            (clojure.pprint/pprint
+                             (for [i (range (.size v))]
+                               (.get v i))) v)]
+     (interposing-doto [v print-n-continue]
+                       (.add 10) (.add 20) (.add 30) (.add 40) (.clear) (.reserve 100))) 
+   (callback.runme/main args)
+   (extend.runme/main args)
+   (reference.runme/main args)
+   (jenum.runme/main args)         
+   (jclass.runme/main args)
+   (jtemplate.runme/main args)
+   (simple.runme/main args)
+   (constants.runme/main args)
+   (variables.runme/main args)
+   (pointer.runme/main args)
+   (funcptr.runme/main args)
+   (typemap.runme/main args)
+   (multimap.runme/main args)
+   (jnative.runme/main args))
 
+(defn poly-linear [fn-map]
+  (let [fn-map (reduce (fn [t-map [k v]] (assoc! t-map k (with-meta v k))) (transient {}) fn-map)
+        bind-coord (fn [f & {:as new-coord-bindings}]
+                     (let [current_bindings]))]
+    (fn [& coords]
+      )))
+
+(defn p [& {:keys [a b c d] :as s :or {a 20 b 300 c 500 d 3023}}]
+  [s a b c d])
+
+#_(-> :a name )
+(defn tfi [& surf-pairs]
+  (let [dims (count surf-pairs)]
+    (fn [& coords]
+      (loop [c coords]))))
 (comment
   (defmacro check [cplx-type gen add_op]
     `(check-fn #(new ~cplx-type %1 %2) ~gen #(~(symbol (str "." (name add_op))) %1 %2))))
