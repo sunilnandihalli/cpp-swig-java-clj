@@ -89,21 +89,59 @@
    (multimap.runme/main args)
    (jnative.runme/main args))
 
+(defn poly [& coeffs]
+  (fn [t] (reduce #(+ (* t %1) %2) 0.0 coeffs)))
+
+(def zero-fn (poly))
+(def linear-0-1 (poly -1 1))
+(def linear-1-0 (poly 1 0))
+(def quadratic-0-1 (poly -1 0 1))
+(def quadratic-1-0 (poly 1 0 0))
+(def quadratic-derivative-0-1  (poly -1 1 0))
+(def hermite-0-1 (poly 2 -3 0 1))
+(def hermite-1-0 (poly -2 3 0 0))
+(def hermite-derivative-0-1 (poly 1 -2 1 0))
+(def hermite-derivative-1-0 (poly 1 -1 0 0))
+(defn tfi-fn [dir-specs]
+  {:pre (every? (fn [{:keys [dir-id range func-basis-quadruplets]}]
+                  (and dir-id range func-basis-quadruplets
+                       (every? (fn [{:keys [f-min phi-min f-max phi-max]}]
+                                 (or (and f-min phi-min) (and f-max phi-max)))
+                               func-basis-quadruplets)))
+                dir-specs)}
+  )
+
+(def tfi-2d-1 (tfi-fn [{:dir-id :u :range [0 1]
+                        :func-basis-quadruplets [{:f-min (fn [{:keys [u v]}] 10.0)
+                                                  :phi-min linear-0-1
+                                                  :f-max (fn [{:keys [u v]}] 20.0)
+                                                  :phi-max linear-1-0}]}
+                       {:dir-id :v :range [0 1]
+                        :func-basis-quadruplets [{:f-min (fn [{:keys [u v]}] 30.0)
+                                                  :phi-min linear-0-1
+                                                  :f-max (fn [{:keys [u v]}] 40.0)
+                                                  :phi-max linear-1-0}]}]))
+(def tfi-2d-2 (tfi-fn [{:dir-id :u :range [0 1]
+                        :func-basis-quadruplets [{:f-min (fn [{:keys [u v]}] 10.0)}]}]))
+
+
+
 (defn poly-linear [fn-map]
-  (let [fn-map (reduce (fn [t-map [k v]] (assoc! t-map k (with-meta v k))) (transient {}) fn-map)
+  (let [fn-map (persistent! (reduce (fn [t-map [k v]] (assoc! t-map k (with-meta v k))) (transient {}) fn-map))
         bind-coord (fn [f & {:as new-coord-bindings}]
-                     (let [current_bindings]))]
-    (fn [& coords]
-      )))
+                     (let [{:keys [bindings num-unbound]} (meta f)]))]
+    ))
 
 (defn p [& {:keys [a b c d] :as s :or {a 20 b 300 c 500 d 3023}}]
   [s a b c d])
-
+#_ (p)
 #_(-> :a name )
 (defn tfi [& surf-pairs]
   (let [dims (count surf-pairs)]
     (fn [& coords]
       (loop [c coords]))))
+
+
 (comment
   (defmacro check [cplx-type gen add_op]
     `(check-fn #(new ~cplx-type %1 %2) ~gen #(~(symbol (str "." (name add_op))) %1 %2))))
