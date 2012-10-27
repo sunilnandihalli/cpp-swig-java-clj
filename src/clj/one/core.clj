@@ -1,5 +1,6 @@
 (ns one.core
-  (:require [clojure.pprint :as p])
+  (:require [clojure.pprint :as p]
+            [clojure.math.combinatorics :as cmb])
   (:import  complex complexDouble complexInt vecInt
                         misc_utilsJNI runme))
 
@@ -106,10 +107,57 @@
   {:pre (every? (fn [{:keys [dir-id range func-basis-quadruplets]}]
                   (and dir-id range func-basis-quadruplets
                        (every? (fn [{:keys [f-min phi-min f-max phi-max]}]
-                                 (or (and f-min phi-min) (and f-max phi-max)))
+                                 (and (and f-min phi-min) (and f-max phi-max)))
                                func-basis-quadruplets)))
                 dir-specs)}
+  
   )
+
+(defn generate-faces [n m dim-keys]
+  " generate 'm-faces' in an n-dimensional hypercube "
+  (let [list-of-face-vars (cmb/combinations dim-keys m)
+        hypercube-faces (fn [face-vars]
+                          (let [var-dir-set (set face-vars)]
+                              (->> dim-keys
+                                   (map #(if (var-dir-set %) [[% :var]] [[% :min] [% :max]]))
+                                   (apply cmb/cartesian-product)
+                                   (map #(into {} %)))))]
+    (mapcat hypercube-faces list-of-face-vars)))
+
+(let [dir-keys (mapv #(-> % (+ (int \a)) char str keyword) (range 0 26))]
+  (defn random-tfi
+    ([n dim-keys] " range of all dimensions is in 0 to 1 "
+       (let [boundary-fns (into {} (map #(do [% (constantly (rand))]) (generate-faces n 0 dim-keys)))]
+         (reduce (fn [boundary-fns dim-id]
+                   (reduce (fn [cur-boundary-fns boundary-key]
+                             (let [gen-boundary-fn (fn [boundary-key]
+                                                     (let [var-keys (keep (fn [[k v]] (if (= v :var) k)) boundary-key)]
+                                                       (tfi-fn (map (fn [dir]
+                                                                      (let [h #(cur-boundary-fns (assoc boundary-key dir %))]
+                                                                        {:dir-id dir :range [0.0 1.0]
+                                                                         :func-basis-quadruplets [{:f-min (h :min)
+                                                                                                   :f-max (h :max)
+                                                                                                   :phi-min linear-0-1
+                                                                                                   :phi-max linear-1-0}]}))
+                                                                    var-keys))))]
+                               (assoc cur-boundary-fns boundary-key (gen-boundary-fn boundary-key))))
+                           (generate-faces n dim-id dim-keys)))
+                 (range 1 n))))))
+
+(defn poly-linear [v]
+  (if (number? v) (constantly v)
+      (let [{min-fn :min max-fn :max} (into {}
+                                            (map (fn [[min-max-key v]]
+                                                   [min-max-key (poly-linear v)]) v))]
+        (fn [c & rest-of-coords]
+          (let [min-v (apply min-fn rest-of-coords)
+                max-v (apply max-fn rest-of-coords)]
+            (+ (* (- 1 c) min-v) (* c max-v)))))))
+
+#_ (def d (poly-linear {:min {:min {:min 10 :max 20}
+                              :max {:min 30 :max 40}}
+                        :max {:min {:min 50 :max 60}
+                              :max {:min 70 :max 80}}}))
 
 (def tfi-2d-1 (tfi-fn [{:dir-id :u :range [0 1]
                         :func-basis-quadruplets [{:f-min (fn [{:keys [u v]}] 10.0)
@@ -126,11 +174,7 @@
 
 
 
-(defn poly-linear [fn-map]
-  (let [fn-map (persistent! (reduce (fn [t-map [k v]] (assoc! t-map k (with-meta v k))) (transient {}) fn-map))
-        bind-coord (fn [f & {:as new-coord-bindings}]
-                     (let [{:keys [bindings num-unbound]} (meta f)]))]
-    ))
+
 
 (defn p [& {:keys [a b c d] :as s :or {a 20 b 300 c 500 d 3023}}]
   [s a b c d])
