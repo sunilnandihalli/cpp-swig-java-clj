@@ -107,7 +107,7 @@
 (defprotocol polynomial
   (eval-poly [this t])
   (derivative [this])
-  (derivative [this n])
+  (nth-derivative [this n])
   (coeffs [this]))
 
 (deftype poly [coeffs]
@@ -115,16 +115,38 @@
   (eval-poly [this t]
     (reduce #(+ (* %1 t) %2) 0.0 coeffs))
   (derivative [this]
-    (->poly (map #(* %1 %2) coeffs (range (count coeffs) 0 -1))))
-  (derivative [this n]
+    (poly. (map #(* %1 %2) coeffs (range (count coeffs) 0 -1))))
+  (nth-derivative [this n]
     (loop [c-poly this n-left n]
       (if-not (> n 0) c-poly
-        (recur (derivative c-poly) (dec n)))))
+              (recur (derivative c-poly) (dec n)))))
   (coeffs [this] coeffs))
 
-(def d (->poly [1 2 3]))
-(invoke d 10)
-(def hermite)
+(defn const-part-coeffs-of-nth-order-poly [num-deriv polynomial-order]
+  (let [num-coeffs (inc polynomial-order)
+        helper (fn helper [c-num-deriv factors-of-coeffs]
+                 (if-not (> c-num-deriv 0) factors-of-coeffs
+                         (helper (dec c-num-deriv)
+                                 (map #(* %1 %2) factors-of-coeffs
+                                      (range (dec (count factors-of-coeffs)) 0 -1)))))]
+    (vec (helper num-deriv (repeat num-coeffs 1.0)))))
+
+(defn hermite-polynomials [num-boundary-continuities]
+  (let [poly-order (- (* 2 num-boundary-continuities) 1)
+        pad-zero #(take (inc poly-order) (concat % (repeat (inc poly-order) 0.0)))
+        matrix-lhs (m/matrix
+                    (mapcat #(let [l (dec (count %))]
+                               (vector (pad-zero (concat (repeat l 0.0) [(% l)]))
+                                       (pad-zero %)))
+                            (for [deriv-level (range num-boundary-continuities)] 
+                              (const-part-coeffs-of-nth-order-poly deriv-level poly-order))))
+        matrix-rhs (m/id (inc poly-order))]
+    (m/pp matrix-lhs)
+    (map (comp ->poly m/as-vec) (m/cols (m/solve matrix-lhs matrix-rhs)))))
+
+
+#_ (clojure.pprint/pprint (map coeffs (hermite-polynomials 4)))
+
 (defn poly-linear [v]
   (if (number? v) (constantly v)
       (let [{min-fn :min max-fn :max} (into {}
