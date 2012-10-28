@@ -105,14 +105,14 @@
   (def hermite-derivative-1-0 (poly 1 -1 0 0)))
 
 (defprotocol polynomial
-  (invoke [this t])
+  (eval-poly [this t])
   (derivative [this])
   (derivative [this n])
   (coeffs [this]))
 
 (deftype poly [coeffs]
   polynomial
-  (invoke [this t]
+  (eval-poly [this t]
     (reduce #(+ (* %1 t) %2) 0.0 coeffs))
   (derivative [this]
     (->poly (map #(* %1 %2) coeffs (range (count coeffs) 0 -1))))
