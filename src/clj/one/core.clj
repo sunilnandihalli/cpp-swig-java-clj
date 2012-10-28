@@ -53,8 +53,6 @@
                                      (repeat interpose-form))]
     `(-> ~java-obj ~@interposed-forms)))
 
-
-
 (defmacro bounded [& forms]
   (let [new-forms (map (fn [frm]
                          `(do
@@ -91,20 +89,42 @@
    (typemap.runme/main args)
    (multimap.runme/main args)
    (jnative.runme/main args))
+(comment
+  (defn poly [& coeffs]
+    (fn [t] (reduce #(+ (* t %1) %2) 0.0 coeffs)))
 
-(defn poly [& coeffs]
-  (fn [t] (reduce #(+ (* t %1) %2) 0.0 coeffs)))
+  (def zero-fn (poly))
+  (def linear-0-1 (poly -1 1))
+  (def linear-1-0 (poly 1 0))
+  (def quadratic-0-1 (poly -1 0 1))
+  (def quadratic-1-0 (poly 1 0 0))
+  (def quadratic-derivative-0-1  (poly -1 1 0))
+  (def hermite-0-1 (poly 2 -3 0 1))
+  (def hermite-1-0 (poly -2 3 0 0))
+  (def hermite-derivative-0-1 (poly 1 -2 1 0))
+  (def hermite-derivative-1-0 (poly 1 -1 0 0)))
 
-(def zero-fn (poly))
-(def linear-0-1 (poly -1 1))
-(def linear-1-0 (poly 1 0))
-(def quadratic-0-1 (poly -1 0 1))
-(def quadratic-1-0 (poly 1 0 0))
-(def quadratic-derivative-0-1  (poly -1 1 0))
-(def hermite-0-1 (poly 2 -3 0 1))
-(def hermite-1-0 (poly -2 3 0 0))
-(def hermite-derivative-0-1 (poly 1 -2 1 0))
-(def hermite-derivative-1-0 (poly 1 -1 0 0))
+(defprotocol polynomial
+  (invoke [this t])
+  (derivative [this])
+  (derivative [this n])
+  (coeffs [this]))
+
+(deftype poly [coeffs]
+  polynomial
+  (invoke [this t]
+    (reduce #(+ (* %1 t) %2) 0.0 coeffs))
+  (derivative [this]
+    (->poly (map #(* %1 %2) coeffs (range (count coeffs) 0 -1))))
+  (derivative [this n]
+    (loop [c-poly this n-left n]
+      (if-not (> n 0) c-poly
+        (recur (derivative c-poly) (dec n)))))
+  (coeffs [this] coeffs))
+
+(def d (->poly [1 2 3]))
+(invoke d 10)
+(def hermite)
 (defn poly-linear [v]
   (if (number? v) (constantly v)
       (let [{min-fn :min max-fn :max} (into {}
@@ -205,8 +225,8 @@
                                                                               [dir {:range [0.0 1.0]
                                                                                     :func-basis-quadruplets [{:f-min (h :min)
                                                                                                               :f-max (h :max)
-                                                                                                              :phi-min linear-0-1
-                                                                                                              :phi-max linear-1-0}]}]))
+                                                                                                              :phi-min :linear-0-1
+                                                                                                              :phi-max :linear-1-0}]}]))
                                                                           var-keys)))))]
                                (assoc cur-boundary-fns boundary-key (gen-boundary-fn boundary-key))))
                            (apply concat (generate-faces n dim-id dim-keys))))
@@ -216,7 +236,7 @@
 
 
 
-(def tfi-2d-1 (tfi-fn [{:dir-id :u :range [0 1]
+#_(def tfi-2d-1 (tfi-fn [{:dir-id :u :range [0 1]
                         :func-basis-quadruplets [{:f-min (fn [{:keys [u v]}] 10.0)
                                                   :phi-min linear-0-1
                                                   :f-max (fn [{:keys [u v]}] 20.0)
@@ -226,8 +246,7 @@
                                                   :phi-min linear-0-1
                                                   :f-max (fn [{:keys [u v]}] 40.0)
                                                   :phi-max linear-1-0}]}]))
-(def tfi-2d-2 (tfi-fn [{:dir-id :u :range [0 1]
-                        :func-basis-quadruplets [{:f-min (fn [{:keys [u v]}] 10.0)}]}]))
+
 
 
 
