@@ -1,6 +1,8 @@
 (ns one.core
   (:require [clojure.pprint :as p]
+            [clatrix.core :as m]
             [clojure.math.combinatorics :as cmb])
+  (:import [clatrix.core Matrix])
   (:import  complex complexDouble complexInt vecInt
                         misc_utilsJNI runme))
 
@@ -170,8 +172,9 @@
                 dir-specs)}
   (fn [& {:as params}]
     (let [dir-keys (keys dir-specs)
-          calc-function (let [ (fn [f & [first-dir & rest-of-dirs-to-constrain :as dirs-to-constrain]]
-                                 (apply make-curryable (get-in dir-specs [first-dir :func-basis-quadruplets]) dirs-to-constrain))])]
+          calc-function (fn []
+                          (let [a (fn [f & [first-dir & rest-of-dirs-to-constrain :as dirs-to-constrain]]
+                                   (apply make-curryable (get-in dir-specs [first-dir :func-basis-quadruplets]) dirs-to-constrain))]))]
       
       (reduce (fn [val num-coords-to-choose]
                 (reduce (fn [c-val list-of-interpolant-dir-groups]
@@ -185,7 +188,13 @@
 (let [dir-keys (mapv #(-> % (+ (int \a)) char str keyword) (range 0 26))]
   (defn random-tfi
     ([n dim-keys] " range of all dimensions is in 0 to 1 "
-       (let [boundary-fns (into {} (map #(vector % (constantly (rand))) (apply concat (generate-faces n 0 dim-keys))))]
+       (let [rand-derivative (fn [derivative-level]
+                               [[:derivative derivative-level]
+                                (into {}
+                                      (map #(vector % (constantly (rand)))
+                                           (cmb/combinations dim-keys derivative-level)))])
+             boundary-fns (into {} (map #(into {} (map rand-derivative [0 1]))
+                                        (apply concat (generate-faces n 0 dim-keys))))]
          (reduce (fn [boundary-fns dim-id]
                    (reduce (fn [cur-boundary-fns boundary-key]
                              (let [gen-boundary-fn (fn [boundary-key]
