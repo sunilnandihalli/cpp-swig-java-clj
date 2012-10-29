@@ -90,19 +90,9 @@
    (multimap.runme/main args)
    (jnative.runme/main args))
 (comment
-  (defn poly [& coeffs]
-    (fn [t] (reduce #(+ (* t %1) %2) 0.0 coeffs)))
-
-  (def zero-fn (poly))
-  (def linear-0-1 (poly -1 1))
-  (def linear-1-0 (poly 1 0))
   (def quadratic-0-1 (poly -1 0 1))
   (def quadratic-1-0 (poly 1 0 0))
-  (def quadratic-derivative-0-1  (poly -1 1 0))
-  (def hermite-0-1 (poly 2 -3 0 1))
-  (def hermite-1-0 (poly -2 3 0 0))
-  (def hermite-derivative-0-1 (poly 1 -2 1 0))
-  (def hermite-derivative-1-0 (poly 1 -1 0 0)))
+  (def quadratic-derivative-0-1  (poly -1 1 0)))
 
 (defprotocol polynomial
   (eval-poly [this t])
@@ -141,9 +131,7 @@
                             (for [deriv-level (range num-boundary-continuities)] 
                               (const-part-coeffs-of-nth-order-poly deriv-level poly-order))))
         matrix-rhs (m/id (inc poly-order))]
-    (m/pp matrix-lhs)
     (map (comp ->poly m/as-vec) (m/cols (m/solve matrix-lhs matrix-rhs)))))
-
 
 #_ (clojure.pprint/pprint (map coeffs (hermite-polynomials 4)))
 
@@ -176,18 +164,20 @@
                     :a1 {:b0 {:c0 50 :c1 60}
                          :b1 {:c0 70 :c1 80}}}
                    [2 0 1]))
+
 #_ (def d (poly-linear {:min {:min {:min 10 :max 20}
                               :max {:min 30 :max 40}}
                         :max {:min {:min 50 :max 60}
-                              :max {:min 70 :max 80}}}
-                       ))
+                              :max {:min 70 :max 80}}}))
+
 (defn curry-call [f & args]
   (let [{:keys [bounded unbounded] :as new-meta-info}
         (reduce (fn [{:keys [bounded unbounded] :as meta-info} [k v]]
                   (if (bounded k) (throw (str k " is already bound"))
                       (-> meta-info
                           (assoc-in [:bounded k] v)
-                          (update-in [:unbounded] disj k)))) (or (meta f) {}) (partition 2 args))]
+                          (update-in [:unbounded] disj k))))
+                (or (meta f) {}) (partition 2 args))]
     (if (empty? unbounded) (apply f (apply concat (seq bounded)))
         (with-meta f new-meta-info))))
 
@@ -216,7 +206,8 @@
     (let [dir-keys (keys dir-specs)
           calc-function (fn []
                           (let [a (fn [f & [first-dir & rest-of-dirs-to-constrain :as dirs-to-constrain]]
-                                   (apply make-curryable (get-in dir-specs [first-dir :func-basis-quadruplets]) dirs-to-constrain))]))]
+                                    (apply make-curryable
+                                           (get-in dir-specs [first-dir :func-basis-quadruplets]) dirs-to-constrain))]))]
       
       (reduce (fn [val num-coords-to-choose]
                 (reduce (fn [c-val list-of-interpolant-dir-groups]
