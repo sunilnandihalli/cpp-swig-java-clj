@@ -105,11 +105,11 @@
   (eval-poly [this t]
     (reduce #(+ (* %1 t) %2) 0.0 coeffs))
   (derivative [this]
-    (poly. (map #(* %1 %2) coeffs (range (count coeffs) 0 -1))))
+    (poly. (map #(* %1 %2) coeffs (range (dec (count coeffs)) 0 -1))))
   (nth-derivative [this n]
     (loop [c-poly this n-left n]
-      (if-not (> n 0) c-poly
-              (recur (derivative c-poly) (dec n)))))
+      (if-not (> n-left 0) c-poly
+              (recur (derivative c-poly) (dec n-left)))))
   (coeffs [this] coeffs))
 
 (defn const-part-coeffs-of-nth-order-poly [num-deriv polynomial-order]
@@ -133,7 +133,29 @@
         matrix-rhs (m/id (inc poly-order))]
     (map (comp ->poly m/as-vec) (m/cols (m/solve matrix-lhs matrix-rhs)))))
 
-#_ (clojure.pprint/pprint (map coeffs (hermite-polynomials 4)))
+(defn abs [x] (if (< x 0) (- x) x))
+(let [eps 1e-6]
+ (defn hermite-polynomial-tester [num-boundary-continuities]
+   (let [polynomials (partition 2 (hermite-polynomials num-boundary-continuities))
+         verify-nth-pair (fn [derivative-order [p1 p2]]
+                           (loop [c-derivative-order 0 [cp1 cp2] [p1 p2]]
+                             (if-not (< c-derivative-order num-boundary-continuities) true
+                                     (let [v (map #(apply eval-poly %) (for [cp [cp1 cp2] t [0.0 1.0]] [cp t]))
+                                           errors (map - (if (= c-derivative-order derivative-order)
+                                                           [1. 0. 0. 1.] [0. 0. 0. 0.]) v)]
+                                       (clojure.pprint/pprint {:derivative-order derivative-order
+                                                               :c-derivative-order c-derivative-order
+                                                               :num-boundary-continuities num-boundary-continuities
+                                                               :coeffs-cp1 (coeffs cp1)
+                                                               :coeffs-cp2 (coeffs cp2)
+                                                               :values v
+                                                               :errors errors})
+                                       (assert (every? #(< (abs %) eps) errors))
+                                       (recur (inc c-derivative-order) (map derivative [cp1 cp2]))))))]
+     (every? identity (map verify-nth-pair (range num-boundary-continuities) polynomials)))))
+
+#_(hermite-polynomial-tester 6)
+#_ (clojure.pprint/pprint ((hermite-polynomials 4)))
 
 (defn poly-linear [v]
   (if (number? v) (constantly v)
@@ -250,15 +272,15 @@
 
 
 #_(def tfi-2d-1 (tfi-fn [{:dir-id :u :range [0 1]
-                        :func-basis-quadruplets [{:f-min (fn [{:keys [u v]}] 10.0)
-                                                  :phi-min linear-0-1
-                                                  :f-max (fn [{:keys [u v]}] 20.0)
-                                                  :phi-max linear-1-0}]}
-                       {:dir-id :v :range [0 1]
-                        :func-basis-quadruplets [{:f-min (fn [{:keys [u v]}] 30.0)
-                                                  :phi-min linear-0-1
-                                                  :f-max (fn [{:keys [u v]}] 40.0)
-                                                  :phi-max linear-1-0}]}]))
+                          :func-basis-quadruplets [{:f-min (fn [{:keys [u v]}] 10.0)
+                                                    :phi-min linear-0-1
+                                                    :f-max (fn [{:keys [u v]}] 20.0)
+                                                    :phi-max linear-1-0}]}
+                         {:dir-id :v :range [0 1]
+                          :func-basis-quadruplets [{:f-min (fn [{:keys [u v]}] 30.0)
+                                                    :phi-min linear-0-1
+                                                    :f-max (fn [{:keys [u v]}] 40.0)
+                                                    :phi-max linear-1-0}]}]))
 
 
 
