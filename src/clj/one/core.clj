@@ -89,6 +89,7 @@
    (typemap.runme/main args)
    (multimap.runme/main args)
    (jnative.runme/main args))
+
 (comment
   (def quadratic-0-1 (poly -1 0 1))
   (def quadratic-1-0 (poly 1 0 0))
@@ -140,16 +141,9 @@
          verify-nth-pair (fn [derivative-order [p1 p2]]
                            (loop [c-derivative-order 0 [cp1 cp2] [p1 p2]]
                              (if-not (< c-derivative-order num-boundary-continuities) true
-                                     (let [v (map #(apply eval-poly %) (for [cp [cp1 cp2] t [0.0 1.0]] [cp t]))
+                                     (let [v (for [cp [cp1 cp2] t [0.0 1.0]] (eval-poly cp t))
                                            errors (map - (if (= c-derivative-order derivative-order)
                                                            [1. 0. 0. 1.] [0. 0. 0. 0.]) v)]
-                                       (clojure.pprint/pprint {:derivative-order derivative-order
-                                                               :c-derivative-order c-derivative-order
-                                                               :num-boundary-continuities num-boundary-continuities
-                                                               :coeffs-cp1 (coeffs cp1)
-                                                               :coeffs-cp2 (coeffs cp2)
-                                                               :values v
-                                                               :errors errors})
                                        (assert (every? #(< (abs %) eps) errors))
                                        (recur (inc c-derivative-order) (map derivative [cp1 cp2]))))))]
      (every? identity (map verify-nth-pair (range num-boundary-continuities) polynomials)))))
@@ -230,7 +224,6 @@
                           (let [a (fn [f & [first-dir & rest-of-dirs-to-constrain :as dirs-to-constrain]]
                                     (apply make-curryable
                                            (get-in dir-specs [first-dir :func-basis-quadruplets]) dirs-to-constrain))]))]
-      
       (reduce (fn [val num-coords-to-choose]
                 (reduce (fn [c-val list-of-interpolant-dir-groups]
                           (reduce (fn [c-c-val variable-keys]
@@ -239,10 +232,52 @@
                         val (generate-faces (count dir-keys) num-coords-to-choose dir-keys)))
               0.0 (range (count dir-keys))))))
 
+(defn all-possible-ways-to-sum [n m]
+  {:doc " n : sum  .... m : num components"
+   :post [(every? (fn [x] (= (apply + x) n)) %)]}
+  (if-not (> m 0) []
+   (map #(map (fn [[x y]] (- y x 1)) (partition 2 1 [(+ m n -1)] (cons -1 %)))
+        (cmb/combinations (range (+ n m -1)) (- m 1)))))
+
+#_ (all-possible-ways-to-sum 2 0)
+
+(defn coefficient-fn [derivative-orders]
+  (fn [deltas]
+    (reduce (fn [acc [d n]]
+              (reduce #(/ (* %1 d) %2)
+                      acc (range 1 (inc n))))
+            1 (interleave deltas derivative-orders))))
+
+(defn taylor-series-coefficients [n]
+  (map (juxt identity coefficient-fn) (mapcat #(all-possible-ways-to-sum n %) (range))))
+
+(defn stencil [locs]
+  {:doc " assuming the known location to be (repeat (count locs) 0) "
+   :pre [(apply = (map count locs))
+         (every? identity (map (fn [loc] (every? (some-fn integer? ratio?) loc)) locs))
+         (= (count (set locs)) (count locs))]}
+  (let [n-dims (count (first locs))
+        num-taylor-terms (count locs)
+        highest-derivative-orders-possible (apply map #(-> %& set count dec) locs)
+        _ (println [:highest-derivative-possible highest-derivative-orders-possible])
+        is-derivative-estimate-possible? #(every? (fn [[x y]] (<= x y))
+                                                  (interleave % highest-derivative-orders-possible))
+        taylor-terms (take num-taylor-terms
+                           (filter #(is-derivative-estimate-possible? (first %))
+                                   (taylor-series-coefficients n-dims)))
+        [deriv-ids coeff-fns] [(map first taylor-terms) (map second taylor-terms)]
+        lhs-matrix (m/matrix (map (fn [loc] (map #(% loc) coeff-fns)) locs))
+        rhs-matrix (m/id num-taylor-terms)
+        coeff-matrix (m/solve lhs-matrix rhs-matrix)]
+    (zipmap deriv-ids (map (comp (fn [coeffs] (zipmap locs coeffs)) m/as-vec) (m/rows coeff-matrix)))))
+
+#_ (stencil [[1] [-1]])
+#_ (stencil [[0] [1] [-1]])
+#_ (stencil [[0 0] [0 1] [1 0] [-1 0] [0 -1]])
 
 (let [dir-keys (mapv #(-> % (+ (int \a)) char str keyword) (range 0 26))]
   (defn random-tfi
-    ([n dim-keys] " range of all dimensions is in 0 to 1 "
+    ([n dim-keys num-derivatives-to-impose] " range of all dimensions is in 0 to 1 "
        (let [rand-derivative (fn [derivative-level]
                                [[:derivative derivative-level]
                                 (into {}
@@ -266,8 +301,6 @@
                                (assoc cur-boundary-fns boundary-key (gen-boundary-fn boundary-key))))
                            (apply concat (generate-faces n dim-id dim-keys))))
                  (range 1 n))))))
-
-
 
 
 
