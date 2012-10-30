@@ -1,7 +1,8 @@
 (ns one.core
   (:require [clojure.pprint :as p]
             [clatrix.core :as m]
-            [clojure.math.combinatorics :as cmb])
+            [clojure.math.combinatorics :as cmb]
+            )
   (:import [clatrix.core Matrix])
   (:import  complex complexDouble complexInt vecInt
                         misc_utilsJNI runme))

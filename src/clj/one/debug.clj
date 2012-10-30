@@ -1,14 +1,87 @@
-(ns isomorphism.debug
-  (:require [clojure.contrib.macro-utils :as m]
+(ns debug
+  (:require ;[clojure.contrib.macro-utils :as m]
 	    [clojure.pprint :as p]
 	    [clojure.walk :as w]
-	    [clojure.contrib.trace :as t]
-            [clojure.contrib.lazy-seqs :as ls])
-  (:use iterate))
+;	    [clojure.contrib.trace :as t]
+;            [clojure.contrib.lazy-seqs :as ls]
+            [clojure.set])
+  (:import [java.io BufferedReader BufferedWriter FileReader]
+           [javax.swing JFrame SwingUtilities]
+           java.awt.event.WindowAdapter)
+  (:use clojure.inspector))
 
+
+(defn wait-for
+  [inspector]
+  (let [blocker (promise)
+        adapter (proxy [WindowAdapter] []
+                  (windowClosed [_e] (deliver blocker nil)))]
+    (SwingUtilities/invokeAndWait
+     #(doto inspector
+        (.setDefaultCloseOperation JFrame/DISPOSE_ON_CLOSE)
+        (.addWindowListener adapter)))
+    @blocker))
+
+(defn dbg [val] (wait-for (clojure.inspector/inspect-tree val)) val)
+  
+(defmacro d [frm]
+  `(let [x# ~frm]
+     (wait-for (clojure.inspector/inspect-tree {:form '~frm :val x#})) x#))
+
+#_(throwable-value "hello")    
+
+#_(defn throw-value [v err-str]
+    (throw (with-meta (Exception. err-str) {:val v})))
+
+#_(defn hello []
+    (throw-value :hello "jdfsfd"))
+
+#_(try (hello) (catch Exception e (meta e)))
 #_(see (make-array Double/TYPE 3 2))
 #_(clojure.pprint/pprint
    (into-array (map (partial into-array Double/TYPE) [[1 2 3 4] [5 6]])))
+
+(defmacro defn-memoized [name & rest]
+  `(do (defn ~name ~@rest) (def ~name (with-meta (memoize ~name) (meta ~name))))) 
+
+(defmacro defn-with-source [name & rest]
+  `(do (defn ~name ~@rest)
+       (def ~name (with-meta ~name
+                    (assoc (meta ~name) :source '~&form)))))
+
+(defmacro self-keyed-map [& vals]
+  `(into {} (vector ~@(map (fn [x] (if (symbol? x)
+                                     `(vector ~(-> x name keyword)  ~x)
+                                     `(vector ~(-> (gensym "key-") name keyword) (with-meta ~x {:s-exp '~x}))))
+                           vals))))  
+
+(defn inc-or-init [x] (if x (inc x) 1))
+
+(defn non-std-update! [tr-mp key f]
+  (let [x (tr-mp key)
+        fx (f x)]
+    (assoc! tr-mp key fx)))
+
+(defn non-std-into! [tr-mp1 tr-mp2]
+  (let [mp2 (persistent! tr-mp2)]
+    (reduce #(conj! %1 %2) tr-mp1 mp2)))
+
+
+(defmacro display
+  ([& forms]
+     `(inspect-tree (self-keyed-map ~@forms))))
+(defn ensure-sortedness [coll]
+  (cond
+   (sorted? coll) coll
+   (map? coll) (into (sorted-map) coll)
+   (coll? coll) (into (sorted-set) coll)
+   :else (throw (Exception. "not a collection"))))
+   
+
+#_(self-keyed-map s z)
+
+(defmacro fnd [& rest]
+  `(with-meta (fn ~@rest) {:source '~&form}))
 
 (defmacro ->var [first & exprs]
   (if (seq exprs) `(let [~'var ~first] (->var ~@exprs)) first))
@@ -144,9 +217,9 @@
   `(~(symbol (str "add-method-to-" (name multi-fn-name)))
     ~dispatch-val (fn ~args ~@body)))
 	 
-(defmulti-m hello #(even? (apply - %1 %2)))
-(defmethod-m hello 3 [& d] :hello)
-(defmethod-m hello 4 [& d] :heeeeellllllooooooooooo)
+#_(defmulti-m hello #(even? (apply - %1 %2)))
+#_(defmethod-m hello 3 [& d] :hello)
+#_(defmethod-m hello 4 [& d] :heeeeellllllooooooooooo)
 #_(hello 6 7 8 )
 
 (defmacro deep-aget
@@ -195,16 +268,21 @@
 (defn all-core-fns []
   (all-fns 'clojure.core))
 
-(defmacro extreme-debug [& body]
-  `(t/dotrace ~(all-visible-fns) (do ~@body)))
+#_(defmacro extreme-debug [& body]
+    `(t/dotrace ~(all-visible-fns) (do ~@body)))
 
-(defmacro debug [& body]
-  `(t/dotrace ~(all-fns) (do ~@body)))
+#_(defmacro debug [& body]
+    `(t/dotrace ~(all-fns) (do ~@body)))
+
 #_(all-visible-fns)
 
 #_(all-fns)
 
-(defmacro print-and-return
+(defn print-and-return
+  ([x] (clojure.pprint/pprint x) x)
+  ([flag x] (clojure.pprint/pprint [flag x]) x))
+
+(defmacro print-and-return-macro
   ([x]
      `(let [x# ~x]
 	(clojure.pprint/pprint x#) x#))
@@ -363,6 +441,7 @@
 	    (reverse (map vector lsyms lbinds rbinds)))))
 
 
+
 (defmacro ->d [ & args]  
   `(with-separator (-> ~@(interpose 'print-and-return args) print-and-return)))
 
@@ -392,43 +471,6 @@
        (str "    "
 	    (list name (into ['this] (take argcount (repeatedly gensym)))))))))
 
-(let [mem (atom {})]
-  (defn rapleaf-mad-matrix-old [[row coll]]
-    (if-let [ret (or (@mem [row coll]) (@mem [coll row]))]
-      ret (let [ret (first (filter (comp not (set (into (iter {for i in (range row)}
-                                                              {collect (rapleaf-mad-matrix-old [i coll]) initially []})
-                                                        (iter {for i in (range coll)}
-                                                              {collect (rapleaf-mad-matrix-old [row i])})))) (range)))]
-            (swap! mem conj [(if (<= row coll) [row coll] [coll row]) ret]) ret))))
-
-(defn xor [& ps]
-  (loop [[p & rp] ps cur-state nil]
-    (cond
-     (and cur-state p) nil
-     p (recur rp p)
-     rp (recur rp cur-state)
-     true cur-state)))
-
-#_(xor false false)
-
-(let [p2 (ls/powers-of-2)]
-  (defn rapleaf-mad-matrix [[row coll]]
-    (loop [[i j] [row coll]
-           [p & ps] (reverse (take-while #(<= % (max row coll)) p2))
-           cur-val 0]
-      (if p (recur (map #(if (>= % p) (- % p) %) [i j])
-                   ps (+ cur-val (if (apply xor (map #(< % p) [i j])) p 0))) cur-val))))
-      
-      
-
-#_(let [n 32
-        ctr-string (str (apply str (repeat n "~3d")) "~%")]
-    (println (apply str (repeat (* 3 n) "-")))
-    (dorun (for [i (range n)]
-             (let [d (for [j (range n)]
-                       (rapleaf-mad-matrix [i j]))]
-               (apply clojure.pprint/cl-format true ctr-string d)))))
 
                 
-
-
+  
