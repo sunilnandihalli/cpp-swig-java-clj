@@ -2,10 +2,11 @@
   (:require [clojure.pprint :as p]
             [clatrix.core :as m]
             [clojure.math.combinatorics :as cmb]
-            )
+            [debug :as d])
   (:import [clatrix.core Matrix])
   (:import  complex complexDouble complexInt vecInt
                         misc_utilsJNI runme))
+
 
 (defn scaffold [iface]
   "this code is from Christophe Grand .. but very usefull.. so I chose to include.."
@@ -239,18 +240,25 @@
   (if-not (> m 0) []
    (map #(map (fn [[x y]] (- y x 1)) (partition 2 1 [(+ m n -1)] (cons -1 %)))
         (cmb/combinations (range (+ n m -1)) (- m 1)))))
-
-#_ (all-possible-ways-to-sum 2 0)
+#_ (take 15 (mapcat #(all-possible-ways-to-sum % 3) (range)))
+#_ (all-possible-ways-to-sum 0 1)
 
 (defn coefficient-fn [derivative-orders]
   (fn [deltas]
-    (reduce (fn [acc [d n]]
-              (reduce #(/ (* %1 d) %2)
-                      acc (range 1 (inc n))))
-            1 (interleave deltas derivative-orders))))
+    (double (reduce (fn [acc [d n]]
+                      (reduce #(/ (* %1 d) %2)
+                              acc (range 1 (inc n))))
+                    1 (zipmap deltas derivative-orders)))))
 
 (defn taylor-series-coefficients [n]
-  (map (juxt identity coefficient-fn) (mapcat #(all-possible-ways-to-sum n %) (range))))
+  (mapcat #(map (juxt vec coefficient-fn) %) (map #(all-possible-ways-to-sum % n) (range))))
+
+(defn definitely-calculable-derivatives [locs])
+
+(defn is-derivative-estimate-possible? [locs deriv]
+  (let [highest-derivative-orders-possible (apply map #(-> %& set count dec) locs)]
+    (every? (fn [[x y]] (<= x y))
+            (zipmap deriv highest-derivative-orders-possible))))
 
 (defn stencil [locs]
   {:doc " assuming the known location to be (repeat (count locs) 0) "
@@ -259,14 +267,10 @@
          (= (count (set locs)) (count locs))]}
   (let [n-dims (count (first locs))
         num-taylor-terms (count locs)
-        highest-derivative-orders-possible (apply map #(-> %& set count dec) locs)
-        _ (println [:highest-derivative-possible highest-derivative-orders-possible])
-        is-derivative-estimate-possible? #(every? (fn [[x y]] (<= x y))
-                                                  (interleave % highest-derivative-orders-possible))
         taylor-terms (take num-taylor-terms
-                           (filter #(is-derivative-estimate-possible? (first %))
+                           (filter #(is-derivative-estimate-possible? locs (first %))
                                    (taylor-series-coefficients n-dims)))
-        [deriv-ids coeff-fns] [(map first taylor-terms) (map second taylor-terms)]
+        [deriv-ids coeff-fns] [(d/d (mapv first taylor-terms)) (mapv second taylor-terms)]
         lhs-matrix (m/matrix (map (fn [loc] (map #(% loc) coeff-fns)) locs))
         rhs-matrix (m/id num-taylor-terms)
         coeff-matrix (m/solve lhs-matrix rhs-matrix)]
@@ -274,8 +278,10 @@
 
 #_ (stencil [[1] [-1]])
 #_ (stencil [[0] [1] [-1]])
-#_ (stencil [[0 0] [0 1] [1 0] [-1 0] [0 -1]])
-
+#_ (stencil [[0 0] [0 1] [1 0] [-1 0] [0 -1]]) ;fails
+#_ (stencil [[0 0] [1 1] [-1 1] [1 -1] [-1 -1]]) ;fails
+#_ (d/d (keys (stencil (for [a (range -2 2) b (range -2 2) c (range -2 2)] [a b c]))))
+#_ (d/d (keys (stencil (for [a (range 2) b (range 2) c (range 2)] [a b c]))))
 (let [dir-keys (mapv #(-> % (+ (int \a)) char str keyword) (range 0 26))]
   (defn random-tfi
     ([n dim-keys num-derivatives-to-impose] " range of all dimensions is in 0 to 1 "

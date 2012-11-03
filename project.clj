@@ -1,5 +1,6 @@
 (defproject one "1.0.0-SNAPSHOT"
   :description "FIXME: write description"
+  :source-paths ["src/clj"]
   :java-source-paths ["gen_java_src" "src/java"]
   :native-path "cpp_lib"
   :jvm-opts [~(str "-Djava.library.path=cpp_lib/:/usr/lib/jni/:" (System/getenv "LD_LIBRARY_PATH"))]

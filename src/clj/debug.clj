@@ -1,9 +1,6 @@
 (ns debug
-  (:require ;[clojure.contrib.macro-utils :as m]
-	    [clojure.pprint :as p]
+  (:require [clojure.pprint :as p]
 	    [clojure.walk :as w]
-;	    [clojure.contrib.trace :as t]
-;            [clojure.contrib.lazy-seqs :as ls]
             [clojure.set])
   (:import [java.io BufferedReader BufferedWriter FileReader]
            [javax.swing JFrame SwingUtilities]
