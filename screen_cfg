@@ -4,10 +4,10 @@ defscrollback 10000
 
 # create windows
 
-screen -t ringserver bash -lc "lein2 ring server-headless"
-screen -t autobuild bash -lc "lein2 cljsbuild auto"
-screen -t emacs  bash -lc "emacs src/cljs/modern_cljs/connect.cljs"
+#screen -t ringserver bash -lc "lein2 ring server-headless"
+#screen -t autobuild bash -lc "lein2 cljsbuild auto"
+screen -t emacs  bash -lc "emacs src/clj/one/core.clj"
 #screen -t swank bash -lc "lein2 swank"
-screen -t ritz-swank-4005 bash -lc "lein2 ritz 4005"
+#screen -t ritz-swank-4005 bash -lc "lein2 ritz 4005"
 screen -t bash bash
-screen -t bash -lc "chrome open /Applications/Google\ Chrome.app http://localhost:3000/shop"
+#screen -t bash -lc "chrome open /Applications/Google\ Chrome.app http://localhost:3000/shop"

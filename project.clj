@@ -15,7 +15,7 @@
                  #_([incanter/incanter-core "1.2.2"]
                       [incanter/incanter-charts "1.2.2"]
                         [incanter/incanter-processing "1.2.2"]) 
-                 [shake "0.2.1"]
+                 #_[shake "0.2.1"]
                  [com.stuartsierra/lazytest "1.2.3"]]
   :repositories {"stuart" "http://stuartsierra.com/maven2"
                  "incanter" "http://repo.incanter.org"})
