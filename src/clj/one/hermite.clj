@@ -27,9 +27,9 @@
   (let [num-coeffs (inc polynomial-order)
         helper (fn helper [c-num-deriv factors-of-coeffs]
                  (if-not (> c-num-deriv 0) factors-of-coeffs
-                         (helper (dec c-num-deriv)
-                                 (map #(* %1 %2) factors-of-coeffs
-                                      (range (dec (count factors-of-coeffs)) 0 -1)))))]
+                         (recur (dec c-num-deriv)
+                                (map #(* %1 %2) factors-of-coeffs
+                                     (range (dec (count factors-of-coeffs)) 0 -1)))))]
     (vec (helper num-deriv (repeat num-coeffs 1.0)))))
 
 (defn hermite-polynomials [num-boundary-continuities]

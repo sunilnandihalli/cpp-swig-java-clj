@@ -1,16 +1,19 @@
 (ns one.tfi)
 
-
 (defn poly-linear [v]
-  (if (number? v) (constantly v)
-      (let [{min-fn :min max-fn :max} (into {}
-                                            (map (fn [[min-max-key v]]
-                                                   [min-max-key (poly-linear v)]) v))]
-        " needs some work to use reshape to improve performance "
-        (fn [c & rest-of-coords]
-          (let [min-v (apply min-fn rest-of-coords)
-                max-v (apply max-fn rest-of-coords)]
-            (+ (* (- 1 c) min-v) (* c max-v)))))))
+  (cond
+   (number? v) (constantly v)
+   (fn? v) v
+   :else (let [{min-fn :min max-fn :max} (into {}
+                                               (map (fn [[min-max-key v-inner]]
+                                                      [min-max-key (poly-linear v-inner)]) v))]
+           " needs some work to use reshape to improve performance "
+           (fn [c & rest-of-coords]
+             (let [min-v (apply min-fn rest-of-coords)
+                   max-v (apply max-fn rest-of-coords)]
+               (+ (* (- 1 c) min-v) (* c max-v)))))))
+
+
 
 (defn reshape [mp reordered-indices]
   "making the equal depth assumption ...."
