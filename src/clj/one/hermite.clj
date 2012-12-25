@@ -1,4 +1,5 @@
-(ns one.hermite)
+(ns one.hermite
+  (:require [clatrix.core :as m]))
 
 (comment
   (def quadratic-0-1 (poly -1 0 1))
@@ -53,9 +54,8 @@
                              (if-not (< c-derivative-order num-boundary-continuities) true
                                      (let [v (for [cp [cp1 cp2] t [0.0 1.0]] (eval-poly cp t))
                                            errors (map - (if (= c-derivative-order derivative-order)
-                                                           [1. 0. 0. 1.] [0. 0. 0. 0.]) v)]
-                                       (assert (every? #(< (abs %) eps) errors))
+                                                           [1. 0. 0. 1.] [0. 0. 0. 0.]) v)
+                                           all-errors-acceptable (every? #(< (abs %) eps) errors)]
+                                       (println {:error (apply max (map abs errors)) :derivative-order derivative-order})
                                        (recur (inc c-derivative-order) (map derivative [cp1 cp2]))))))]
      (every? identity (map verify-nth-pair (range num-boundary-continuities) polynomials)))))
-
-#_(hermite-polynomial-tester 6)

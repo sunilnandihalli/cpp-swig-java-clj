@@ -1,4 +1,5 @@
-(ns one.tfi)
+(ns one.tfi
+  (:require [clojure.math.combinatorics :as cmb]))
 
 (defn poly-linear [v]
   (cond
@@ -13,8 +14,6 @@
                    max-v (apply max-fn rest-of-coords)]
                (+ (* (- 1 c) min-v) (* c max-v)))))))
 
-
-
 (defn reshape [mp reordered-indices]
   "making the equal depth assumption ...."
   (let [kys (reverse (loop [kys nil cmp mp]
@@ -28,21 +27,10 @@
                 (assoc-in cmp new-key value))) 
             {} (apply cmb/cartesian-product kys))))
 
-#_ (def e (reshape {:a0 {:b0 {:c0 10 :c1 20}
-                         :b1 {:c0 30 :c1 40}}
-                    :a1 {:b0 {:c0 50 :c1 60}
-                         :b1 {:c0 70 :c1 80}}}
-                   [2 0 1]))
-
-#_ (def d (poly-linear {:min {:min {:min 10 :max 20}
-                              :max {:min 30 :max 40}}
-                        :max {:min {:min 50 :max 60}
-                              :max {:min 70 :max 80}}}))
-
 (defn curry-call [f & args]
   (let [{:keys [bounded unbounded] :as new-meta-info}
         (reduce (fn [{:keys [bounded unbounded] :as meta-info} [k v]]
-                  (if (bounded k) (throw (str k " is already bound"))
+                  (if (bounded k) (throw (Exception. (str k " is already bound")))
                       (-> meta-info
                           (assoc-in [:bounded k] v)
                           (update-in [:unbounded] disj k))))
@@ -51,10 +39,11 @@
         (with-meta f new-meta-info))))
 
 (defn make-curryable [f & necessary-args-set]
-  (with-meta f {:unbounded {} :bounded (set necessary-args-set)}))
+  (with-meta f {:bounded {} :unbounded (set necessary-args-set)}))
 
 (defn generate-faces [n m dim-keys]
-  " generate 'm-faces' in an n-dimensional hypercube "
+  {:pre [(= (count dim-keys) n) (<= m n)]
+   :doc " generate 'm-faces' in an n-dimensional hypercube "}
   (let [list-of-face-vars (cmb/combinations dim-keys m)
         hypercube-faces (fn [face-vars]
                           (let [var-dir-set (set face-vars)]
@@ -67,9 +56,8 @@
 (defn tfi-fn [dir-specs]
   {:pre (every? (fn [[dir {:keys [func-basis-quadruplets]}]]
                   (and dir func-basis-quadruplets
-                       (every? (fn [{:keys [f-min phi-min f-max phi-max]}]
-                                 (and f-min phi-min f-max phi-max))
-                               func-basis-quadruplets)))
+                       (every? #(contains? func-basis-quadruplets %)
+                               [:f-min :phi-min :f-max :phi-max])))
                 dir-specs)}
   (fn [& {:as params}]
     (let [dir-keys (keys dir-specs)

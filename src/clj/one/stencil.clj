@@ -1,4 +1,7 @@
-(ns one.stencil)
+(ns one.stencil
+  (:require [clojure.math.combinatorics :as cmb]))
+
+(defn abs [x] (if (< x 0) (- x) x))
 
 (defn all-possible-ways-to-sum [n m]
   {:doc " n : sum  .... m : num components"
