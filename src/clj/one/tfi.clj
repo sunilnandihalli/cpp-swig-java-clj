@@ -53,6 +53,8 @@
                                    (map #(into {} %)))))]
     (map hypercube-faces list-of-face-vars)))
 
+
+
 (defn tfi-fn [dir-specs]
   {:pre (every? (fn [[dir {:keys [func-basis-quadruplets]}]]
                   (and dir func-basis-quadruplets

@@ -12,6 +12,8 @@
   (nth-derivative [this n])
   (coeffs [this]))
 
+
+
 (deftype poly [coeffs]
   polynomial
   (eval-poly [this t]
