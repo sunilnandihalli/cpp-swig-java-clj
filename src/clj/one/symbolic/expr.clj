@@ -34,26 +34,43 @@
     (differentiate [this deriv-orders]
       (let [c ])))
 
-(let [eval-func (fn [op op-identity commutative-op]
-                  (fn [operands sym-vals]
-                    (let [[f & rs] (mapv #(evalx % sym-vals)
-                                         (if (> (count operands) 1)
-                                           operands (cons op-identity operands)))
-                          {numbers true new-exprs false} (group-by number? rs)
-                          rs-acc (apply commutative-op numbers)]
-                      (if (number? f)
-                        (let [d (op f rs-acc)]
-                          (if (empty? new-exprs) d
-                              )))
-                      )))])
+(defn arith-exp-evaluator [op op-identity commutative-op expr-creator]
+  (fn [{:keys [operands]} sym-vals]
+    (let [[f & rs] (mapv #(evalx % sym-vals)
+                         (if (> (count operands) 1)
+                           operands (cons op-identity operands)))
+          {numbers true new-exprs false} (group-by number? rs)
+          rs-acc (apply commutative-op numbers)]
+      (if (number? f)
+        (let [d (op f rs-acc)]
+          (if (empty? new-exprs) d
+              (expr-creator (cons d new-exprs)))))
+      (expr-creator (apply vector f rs-acc new-exprs)))))
 
+(defrecord plus [operands])
+(defrecord mult [operands])
+(defrecord minus [operands])
+(defrecord divide [operands])
 
-(let [y #(+ 1 2)]
-  (deftype x [a]
-    symbolicExpr
-    (evalx [this args]
-      (y))))
+(defmulti evalx class)
+(let [evalx-p (arith-exp-evaluator + 0 + ->plus)]
+  (defmethod evalx plus [expr sym-vals]
+    (evalx-p expr sym-vals)))
 
+(let [evalx-sub (arith-exp-evaluator - 0 + ->minus)]
+  (defmethod evalx minus [expr sym-vals]
+    (evalx-sub expr sym-vals)))
+
+(let [evalx-mul (arith-exp-evaluator * 1 * ->mult)]
+  (defmethod evalx mult [expr sym-vals]
+    (evalx-mul expr sym-vals)))
+
+(let [evalx-div (arith-exp-evaluator / 1 * ->divide)]
+  (defmethod evalx divide [expr sym-vals]
+    (evalx-div expr sym-vals)))
+(extend-type plus
+  symbolicExpr
+  (evalx))
 
 (deftype plus [exprs]
   symbolicExpr
