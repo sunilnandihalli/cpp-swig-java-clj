@@ -2,19 +2,20 @@
   (:require [one.symbolic expr])
   (:use [one.symbolic expr]
         [midje.sweet])
-  (:import [one.symbolic.expr plus sine mult minus divide pow log symb]))
+  (:import [one.symbolic.expr plus sin cos mult minus divide pow log symb]))
 
-(let [s1 (plus. [(symb. :a) (symb. :b)])
-      s2 (minus. [(symb. :a) (symb. :b) (symb. :c)])
-      s3 (mult. [(symb. :a) (symb. :b) (symb. :c)])
-      s4 (divide. [(symb. :a) (symb. :b) (symb. :c)])
-      s5 (sine. s1)
-      s6 (log. s1 s3)
-      s7 (pow. s1 s4)
-      s8 (minus. :a)
-      s9 (plus. :a)
-      s10 (mult. :a)
-      s11 (divide. :a)]
+(let [[a b c] (map ->symb [:a :b :c])
+      s1 (plus. [a b])
+      s2 (minus. [a b c])
+      s3 (mult. [a b c])
+      s4 (divide. [a b c])
+      s5 (sin. [s1])
+      s6 (log. [s1])
+      s7 (pow. [s1 s4])
+      s8 (minus. [a])
+      s9 (plus. [a])
+      s10 (mult. [a])
+      s11 (divide. [a])]
   (fact
    (evalx s1 {:a 10 :b 20}) => 30
    (evalx s2 {:a 10 :b 20 :c 30}) => -40

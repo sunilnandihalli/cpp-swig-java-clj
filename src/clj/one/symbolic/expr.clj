@@ -1,42 +1,16 @@
 (ns one.symbolic.expr)
+(defrecord plus [operands])
+(defrecord mult [operands])
+(defrecord minus [operands])
+(defrecord divide [operands])
+(defrecord symb [sym])
 
-(defprotocol symbolicExpr
-  (evalx [this args]))
-
-(defprotocol symbolicDifferentiable
-  (differentiate [this derivative-orders-map]))
-
-
-
-(deftype sine [expr]
-  symbolicExpr
-  (evalx [this args]
-    (let [s (evalx expr args)]
-      (if (number? s) (Math/sin s)
-          (sine. s)))))
-
-(deftype cosine [expr]
-  symbolicExpr
-  (evalx [this args]
-    (let [c (evalx expr args)]
-      (if (number? c) (Math/cos c)
-          (cosine. c)))))
-
-#_(extend-type cosine
-    symbolicDifferentiable
-    (differentiate [this deriv-orders]
-      (let [s (differentiate expr deriv-orders)]
-        (if (number? s) (- (Math/sin s))
-            (sine. c)))))
-
-#_(extend-type sine
-    symbolicDifferentiable
-    (differentiate [this deriv-orders]
-      (let [c ])))
+(defmulti evalx (fn [expr sym-vals] (if (number? expr) :number (class expr))))
 
 (defn arith-exp-evaluator [op op-identity commutative-op expr-creator]
-  (fn [{:keys [operands]} sym-vals]
-    (let [[f & rs] (mapv #(evalx % sym-vals)
+  (fn evaluator [{:keys [operands]} sym-vals]
+    (let [operands (if (> (count operands) 1) operands (cons op-identity operands))
+          [f & rs] (mapv #(evalx % sym-vals)
                          (if (> (count operands) 1)
                            operands (cons op-identity operands)))
           {numbers true new-exprs false} (group-by number? rs)
@@ -44,15 +18,29 @@
       (if (number? f)
         (let [d (op f rs-acc)]
           (if (empty? new-exprs) d
-              (expr-creator (cons d new-exprs)))))
-      (expr-creator (apply vector f rs-acc new-exprs)))))
+              (expr-creator (cons d new-exprs))))
+        (expr-creator (apply vector f rs-acc new-exprs))))))
 
-(defrecord plus [operands])
-(defrecord mult [operands])
-(defrecord minus [operands])
-(defrecord divide [operands])
+(defn function-evaluator [expr-creator f]
+  (fn f-evaluator [{:keys [operands]} sym-vals]
+    (let [vals (mapv #(evalx % sym-vals) operands)]
+      (if (every? number? vals) (apply f vals)
+          (expr-creator vals)))))
 
-(defmulti evalx class)
+(defmacro func-expr-creator [& math-func-names]
+  (let [func-creator (fn [[s f]]
+                       (let [creator-name (-> (str "->" (name s)) symbol)]
+                         `((defrecord ~s [~'operands])
+                           (let [evalx# (function-evaluator ~creator-name ~f)
+                                 classname# (class (~creator-name []))]
+                             (defmethod evalx classname# [expr# sym-vals#]
+                               (evalx# expr# sym-vals#))))))
+        all-defs (mapcat func-creator math-func-names)]
+    `(do ~@all-defs)))
+
+(let [sinf #(Math/sin %) cosf #(Math/cos %) logf #(Math/log %) powf #(Math/pow %1 %2) expf #(Math/exp %)]
+  (func-expr-creator [sin sinf] [cos cosf] [log logf] [pow powf] [exp expf]))
+
 (let [evalx-p (arith-exp-evaluator + 0 + ->plus)]
   (defmethod evalx plus [expr sym-vals]
     (evalx-p expr sym-vals)))
@@ -68,71 +56,11 @@
 (let [evalx-div (arith-exp-evaluator / 1 * ->divide)]
   (defmethod evalx divide [expr sym-vals]
     (evalx-div expr sym-vals)))
-(extend-type plus
-  symbolicExpr
-  (evalx))
 
-(deftype plus [exprs]
-  symbolicExpr
-  (evalx [this args]
-    (let [results (map #(evalx % args) exprs)
-          {numbers true new-exprs false} (group-by number? results)
-          sum (apply + numbers)]
-      (if (empty? new-exprs) sum
-          (plus. (conj new-exprs sum))))))
+(defmethod evalx symb [expr sym-vals]
+  (let [sym (:sym expr)]
+    (if-let [val (sym sym-vals)]
+      val expr)))
 
-(deftype mult [exprs]
-  symbolicExpr
-  (evalx [this args]
-    (let [results (map #(evalx % args) exprs)
-          {numbers true new-exprs false} (group-by number? results)
-          prod (apply * numbers)]
-      (if (empty? new-exprs) prod
-          (mult. (conj new-exprs prod))))))
-
-(deftype minus [exprs]
-  symbolicExpr
-  (evalx [this args]
-    (let [[f & rs] (map #(evalx % args) exprs)
-          {numbers true new-exprs false} (group-by number? rs)
-          sum-rs-nums (apply + numbers)]
-      (if (number? f)
-        (let [d (- f sum-rs-nums)]
-          (if (empty? new-exprs) d
-              (minus. (cons d new-exprs))))
-        (minus. (apply vector f sum-rs-nums new-exprs))))))
-
-
-(deftype divide [exprs]
-  symbolicExpr
-  (evalx [this args]
-    (let [[f & rs] (map #(evalx % args) exprs)
-          {numbers true new-exprs false} (group-by number? rs)
-          prod-rs-nums (apply * numbers)]
-      (if (number? f)
-        (let [q (/ f prod-rs-nums)]
-          (if (empty? new-exprs) q
-              (divide. (cons q new-exprs))))
-        (divide. (apply vector f prod-rs-nums new-exprs))))))
-
-(deftype pow [base expt]
-  symbolicExpr
-  (evalx [this args]
-    (let [[b e] (map #(evalx % args) [base expt])]
-      (if (every? number? [b e]) (Math/pow b e)
-          (pow. b e)))))
-
-(deftype log [e1 e2]
-  symbolicExpr
-  (evalx [this args]
-    (let [[e1 e2] (map #(evalx % args) [e1 e2])]
-      (if (every? number? [e1 e2]) (/ (Math/log e1) (Math/log e2))
-          (log. e1 e2)))))
-
-(deftype symb [keyword]
-  symbolicExpr
-  (evalx [this symb-val-map]
-    (if-let [x (keyword symb-val-map)] x this)))
-
-
-#_ (def s) 
+(defmethod evalx :number [expr sym-vals]
+  expr)
