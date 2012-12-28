@@ -4,7 +4,9 @@
   (evalx [this args]))
 
 (defprotocol symbolicDifferentiable
-  (differentiate [this & {:as derivative-orders-map}]))
+  (differentiate [this derivative-orders-map]))
+
+
 
 (deftype sine [expr]
   symbolicExpr
@@ -12,6 +14,46 @@
     (let [s (evalx expr args)]
       (if (number? s) (Math/sin s)
           (sine. s)))))
+
+(deftype cosine [expr]
+  symbolicExpr
+  (evalx [this args]
+    (let [c (evalx expr args)]
+      (if (number? c) (Math/cos c)
+          (cosine. c)))))
+
+#_(extend-type cosine
+    symbolicDifferentiable
+    (differentiate [this deriv-orders]
+      (let [s (differentiate expr deriv-orders)]
+        (if (number? s) (- (Math/sin s))
+            (sine. c)))))
+
+#_(extend-type sine
+    symbolicDifferentiable
+    (differentiate [this deriv-orders]
+      (let [c ])))
+
+(let [eval-func (fn [op op-identity commutative-op]
+                  (fn [operands sym-vals]
+                    (let [[f & rs] (mapv #(evalx % sym-vals)
+                                         (if (> (count operands) 1)
+                                           operands (cons op-identity operands)))
+                          {numbers true new-exprs false} (group-by number? rs)
+                          rs-acc (apply commutative-op numbers)]
+                      (if (number? f)
+                        (let [d (op f rs-acc)]
+                          (if (empty? new-exprs) d
+                              )))
+                      )))])
+
+
+(let [y #(+ 1 2)]
+  (deftype x [a]
+    symbolicExpr
+    (evalx [this args]
+      (y))))
+
 
 (deftype plus [exprs]
   symbolicExpr
@@ -31,7 +73,7 @@
       (if (empty? new-exprs) prod
           (mult. (conj new-exprs prod))))))
 
-(deftype sub [exprs]
+(deftype minus [exprs]
   symbolicExpr
   (evalx [this args]
     (let [[f & rs] (map #(evalx % args) exprs)
@@ -40,8 +82,8 @@
       (if (number? f)
         (let [d (- f sum-rs-nums)]
           (if (empty? new-exprs) d
-              (sub. (cons d new-exprs))))
-        (sub. (apply vector f sum-rs-nums new-exprs))))))
+              (minus. (cons d new-exprs))))
+        (minus. (apply vector f sum-rs-nums new-exprs))))))
 
 
 (deftype divide [exprs]
@@ -72,7 +114,7 @@
 
 (deftype symb [keyword]
   symbolicExpr
-  (evalx [this & {:as symb-val-map}]
+  (evalx [this symb-val-map]
     (if-let [x (keyword symb-val-map)] x this)))
 
 
