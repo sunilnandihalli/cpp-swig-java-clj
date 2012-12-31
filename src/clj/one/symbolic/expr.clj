@@ -1,11 +1,14 @@
-(ns one.symbolic.expr)
+(ns one.symbolic.expr
+  (:use [clojure.pprint]))
 (defrecord plus [operands])
 (defrecord mult [operands])
 (defrecord minus [operands])
 (defrecord divide [operands])
 (defrecord symb [sym])
-
-(defmulti evalx (fn [expr sym-vals] (if (number? expr) :number (class expr))))
+(defn dispatch-fn [expr sym-vals] (if (number? expr) :number (class expr)))
+(defmulti evalx dispatch-fn)
+(defmulti differentiate dispatch-fn)
+(defmulti simplify dispatch-fn)
 
 (defn arith-exp-evaluator [op op-identity commutative-op expr-creator]
   (fn evaluator [{:keys [operands]} sym-vals]
@@ -57,10 +60,93 @@
   (defmethod evalx divide [expr sym-vals]
     (evalx-div expr sym-vals)))
 
+(defn differentiation-chain-rule [operands vec-of-derivative-of-func-wrt-each-operand differentiating-sym]
+  (let [operand-derivatives (mapv #(differentiate % differentiating-sym) operands)
+        terms (vec (keep identity
+                         (map (fn [op-derivative deriv-of-func-wrt-operand-fn]
+                                (let [deriv-of-func-wrt-operand (deriv-of-func-wrt-operand-fn operands)]
+                                  (if (every? #(not= 0 %) [op-derivative deriv-of-func-wrt-operand])
+                                    (cond
+                                     (= op-derivative 1) deriv-of-func-wrt-operand
+                                     (= deriv-of-func-wrt-operand 1) op-derivative
+                                     :else (mult. [op-derivative deriv-of-func-wrt-operand])))))
+                              operand-derivatives vec-of-derivative-of-func-wrt-each-operand)))
+        {numbers true new-exprs false} (group-by number? terms)
+        terms-numeric-sum (apply + numbers)]
+    (if (= 0 terms-numeric-sum)
+      (cond
+       (empty? new-exprs) 0
+       (= 1 (count new-exprs)) (first new-exprs)
+       :else (plus. new-exprs))
+      (if (empty? new-exprs) terms-numeric-sum
+          (plus. (cons terms-numeric-sum new-exprs))))))
+
+(defn higher-order-derivative [expr deriv-order-map]
+  (loop [[cur-sym order] nil cur-differentiated-expr expr
+         next-deriv-order-map deriv-order-map]
+    (cond
+     (and cur-sym order (not= 0 order)) (recur [cur-sym (dec order)] (differentiate cur-differentiated-expr cur-sym) next-deriv-order-map)
+     (not-empty next-deriv-order-map) (recur (first next-deriv-order-map) cur-differentiated-expr (rest next-deriv-order-map))
+     :else cur-differentiated-expr)))
+
+(let [derivative-funcs (repeat (constantly 1))]
+  (defmethod differentiate plus [{:keys [operands]} deriv-sym]
+    (differentiation-chain-rule operands derivative-funcs deriv-sym)))
+
+(let [derivative-funcs (map (fn [index] (if (= 0 index)
+                                          #(if (= 1 (count %)) -1 1)
+                                          (constantly -1))) (range))]
+  (defmethod differentiate minus [{:keys [operands]} deriv-sym]
+    (differentiation-chain-rule operands derivative-funcs deriv-sym)))
+
+(let [remove-item-at (fn [at coll]
+                       (keep-indexed #(if (not= %1 at) %2) coll))
+      derivative-funcs (map #(fn [operands]
+                               (mult. (remove-item-at % operands))) (range))]
+  (defmethod differentiate mult [{:keys [operands]} deriv-sym]
+    (differentiation-chain-rule operands derivative-funcs deriv-sym)))
+
+(let [derivative-funcs (cons (fn [operands]
+                               (if (= 1 (count operands)) (divide. (cons -1 (repeat 2 (first operands))))
+                                   (divide. (cons 1 (drop 1 operands)))))
+                             (map (fn [index]
+                                    (fn [operands]
+                                      (divide. (->> (rest operands)
+                                                    (cons (nth operands index))
+                                                    (cons (minus. (take 1 operands))))))) (drop 1 (range))))]
+  (defmethod differentiate divide [{:keys [operands]} deriv-sym]
+    (differentiation-chain-rule operands derivative-funcs deriv-sym)))
+
+(let [derivative-funcs [#(cos. %)]]
+  (defmethod differentiate sin [{:keys [operands]} deriv-sym]
+    (differentiation-chain-rule operands derivative-funcs deriv-sym)))
+
+(let [derivative-funcs [#(minus. [(sin. %)])]]
+  (defmethod differentiate cos [{:keys [operands]} deriv-sym]
+    (differentiation-chain-rule operands derivative-funcs deriv-sym)))
+
+(let [derivative-funcs [#(divide. %)]]
+  (defmethod differentiate log [{:keys [operands]} deriv-sym]
+    (differentiation-chain-rule operands derivative-funcs deriv-sym)))
+
+(let [derivative-funcs [(fn [[x y]] (mult. [y (pow. [x (minus. [y 1])])]))
+                        (fn [[x y]] (mult. [(pow. [x y]) (log. [x])]))]]
+  (defmethod differentiate pow [{:keys [operands]} deriv-sym]
+    (differentiation-chain-rule operands derivative-funcs deriv-sym)))
+
+(let [derivative-funcs [#(exp. %)]]
+  (defmethod differentiate exp [{:keys [operands]} deriv-sym]
+    (differentiation-chain-rule operands derivative-funcs deriv-sym)))
+
 (defmethod evalx symb [expr sym-vals]
-  (let [sym (:sym expr)]
-    (if-let [val (sym sym-vals)]
-      val expr)))
+  (if-let [val ((:sym expr) sym-vals)]
+    val expr))
+
+(defmethod differentiate symb [expr deriv-sym]
+  (if (= (:sym expr) deriv-sym) 1 0))
 
 (defmethod evalx :number [expr sym-vals]
   expr)
+
+(defmethod differentiate :number [expr sym-vals]
+  0)
